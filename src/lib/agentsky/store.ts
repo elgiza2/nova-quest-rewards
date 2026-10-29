@@ -37,22 +37,22 @@ export function loadWorkspace(force = false) {
   const generation = ++loadGeneration;
   const request = (async () => {
     try {
-      // A transient sessions failure must not blank the agents directory.
-      const [bootstrapResult, sessionsResult] = await Promise.allSettled([
-        agentApi.bootstrap(),
-        agentApi.sessions(),
-      ]);
+      // Optional conversation history must not delay the agents directory.
+      const sessionsRequest = agentApi.sessions().then(
+        (result) => result.sessions,
+        () => null,
+      );
+      const b = await agentApi.bootstrap();
       if (generation !== loadGeneration) return;
-      if (bootstrapResult.status === "rejected") throw bootstrapResult.reason;
-      const b = bootstrapResult.value;
-      const sessions = sessionsResult.status === "fulfilled" ? sessionsResult.value.sessions : [];
       set({
         ready: true,
         error: null,
         agents: b.agents,
         tier: b.tier,
         models: b.models,
-        sessions,
+      });
+      void sessionsRequest.then((sessions) => {
+        if (generation === loadGeneration && sessions !== null) set({ sessions });
       });
     } catch (e: unknown) {
       if (generation === loadGeneration) {
@@ -74,7 +74,12 @@ function syncWorkspaceOwner(userId: string | null) {
   loadGeneration++;
   loading = null;
   set(emptyState());
-  if (userId) void loadWorkspace(true);
+  // Leave Supabase's auth notification lock before calling getSession again.
+  if (userId) {
+    setTimeout(() => {
+      if (workspaceOwner === userId) void loadWorkspace();
+    }, 0);
+  }
 }
 
 function startAuthSync() {
