@@ -5,7 +5,6 @@ import { promptUpgrade } from "@/lib/upgradeMoment";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useDynamicModels } from "@/hooks/useModels";
 import { AlertCircle, Check, RefreshCw } from "lucide-react";
-import { BrandIcon, hasBrandIcon } from "@/components/chat/media/BrandIcon";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { isPaidUser } from "@/lib/subscriptionGating";
 import { filterImageModels, filterVideoModels } from "@/lib/mediaModelPolicy";
@@ -14,17 +13,6 @@ import megsyModelIcon from "@/assets/megsy-model.jpg";
 
 function ModelIcon(_: { model: any }) {
   return <img src={megsyModelIcon} alt="" className="h-11 w-11 shrink-0 rounded-xl object-cover" />;
-}
-
-function ProviderModelIcon({ model }: { model: any }) {
-  const isMegsy = /megsy/i.test(String(model.name || ""));
-  const providerIcon = hasBrandIcon(model.name, model.provider);
-  const src = isMegsy ? megsyModelIcon : model.iconUrl;
-  if (providerIcon) {
-    return <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-foreground/[0.05]"><BrandIcon name={model.name} provider={model.provider} variant="color" size={28} /></span>;
-  }
-  if (isMegsy || src) return <img src={src} alt="" className={`h-11 w-11 shrink-0 rounded-xl ${isMegsy ? "object-cover" : "object-contain"}`} />;
-  return <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-foreground/[0.05] text-lg font-bold text-foreground/70">{(model.name || "?").trim().charAt(0).toUpperCase()}</span>;
 }
 
 export interface MediaModelChoice {
