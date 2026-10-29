@@ -62,3 +62,4 @@
 - [x] Remove chat suggestions (follow-up suggestion buttons banned in prompt)
 - [ ] Remove all icons and every shadow from chat drawings, and make the user message pink.
 - [ ] New icon-free, shadow-free design for the thinking steps and agent steps shown while working.
+- [ ] When the AI needs information from the user, it must draw the question itself (choice buttons, text box, or any other input type) with its own question label.
