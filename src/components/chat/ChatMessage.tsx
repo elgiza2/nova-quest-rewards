@@ -1388,18 +1388,20 @@ const ChatMessage = ({
                   onTouchCancel={clearLongPress}
                   onClick={handleBubbleClick}
                    style={{
-                     background:
-                       "var(--user-bubble, linear-gradient(135deg, hsl(340 82% 56%) 0%, hsl(15 88% 55%) 55%, hsl(22 95% 55%) 100%))",
-                     color: "var(--user-bubble-text, #ffffff)",
-                     boxShadow:
-                       "0 1px 0 hsl(0 0% 100% / 0.18) inset, 0 10px 26px -10px hsl(340 82% 56% / 0.55), 0 4px 14px -6px hsl(22 95% 55% / 0.45)",
                     WebkitTouchCallout: "none",
                     WebkitUserSelect: "none",
                     userSelect: "none",
                   }}
-                  className={`px-4 py-2.5 rounded-[18px] text-[0.9375rem] leading-relaxed break-words user-bubble lang-${l} transition-transform ${menuOpen ? "scale-[0.985]" : ""}`}
+                  className={`px-4 py-2.5 rounded-[18px] text-[0.9375rem] leading-relaxed break-words user-bubble user-bubble-fx lang-${l} transition-transform ${menuOpen ? "scale-[0.985]" : ""}`}
                 >
-                  <UserMarkdown content={content} onLinkClick={handleLinkClick} />
+                  <span className="user-bubble-points" aria-hidden="true">
+                    {Array.from({ length: 10 }).map((_, i) => (
+                      <i key={i} />
+                    ))}
+                  </span>
+                  <div className="relative z-[2]">
+                    <UserMarkdown content={content} onLinkClick={handleLinkClick} />
+                  </div>
                 </div>
                 {/* Desktop hover actions: ellipsis menu button */}
                 <div

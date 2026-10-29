@@ -44,3 +44,21 @@
 @import "./settings-home.css";
 @import "./settings-glass.css";
 
+
+/* User message bubble — Uiverse violet glow with rising points */
+.user-bubble-fx{position:relative;isolation:isolate;overflow:hidden;color:#fff;background:radial-gradient(65.28% 65.28% at 50% 100%,rgba(223,113,255,.8) 0%,rgba(223,113,255,0) 100%),linear-gradient(0deg,#7a5af8,#7a5af8);box-shadow:0 10px 26px -12px #7a5af8}
+.user-bubble-fx::before{content:"";position:absolute;inset:1px;border-radius:17px;z-index:0;pointer-events:none;background:linear-gradient(177.95deg,rgba(255,255,255,.19) 0%,rgba(255,255,255,0) 100%)}
+.user-bubble-points{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:1}
+.user-bubble-points i{position:absolute;bottom:-10px;width:2px;height:2px;border-radius:9999px;background:#fff;animation:ub-float 2.2s infinite ease-in-out}
+@keyframes ub-float{0%{transform:translateY(0)}85%{opacity:0}100%{transform:translateY(-55px);opacity:0}}
+.user-bubble-points i:nth-child(1){left:10%;animation-duration:2.35s;animation-delay:.2s}
+.user-bubble-points i:nth-child(2){left:30%;opacity:.7;animation-duration:2.5s;animation-delay:.5s}
+.user-bubble-points i:nth-child(3){left:25%;opacity:.8;animation-duration:2.2s;animation-delay:.1s}
+.user-bubble-points i:nth-child(4){left:44%;opacity:.6;animation-duration:2.05s}
+.user-bubble-points i:nth-child(5){left:50%;animation-duration:1.9s}
+.user-bubble-points i:nth-child(6){left:75%;opacity:.5;animation-duration:1.5s;animation-delay:1.5s}
+.user-bubble-points i:nth-child(7){left:88%;opacity:.9;animation-duration:2.2s;animation-delay:.2s}
+.user-bubble-points i:nth-child(8){left:58%;opacity:.8;animation-duration:2.25s;animation-delay:.2s}
+.user-bubble-points i:nth-child(9){left:98%;opacity:.6;animation-duration:2.6s;animation-delay:.1s}
+.user-bubble-points i:nth-child(10){left:65%;animation-duration:2.5s;animation-delay:.2s}
+@media (prefers-reduced-motion:reduce){.user-bubble-points{display:none}}
