@@ -55,3 +55,6 @@
 - [x] Telegram sign-in race fix shipped in this publish
 - [x] One-off channel post scheduled for 2026-10-24 02:00 UTC (fires on next bot traffic)
 - [ ] Replace OpenUI chat visuals (remove 'Open UI' button, better-looking renderer)
+- [x] Fast replies: skip out-of-credit text provider, use quick backup for simple chat (~1s)
+- [x] Visual answers: model instructed to draw with built-in widget styling instead of OpenUI
+- [ ] Images/video/files/code/computer in chat: blocked — Cerebras and abliteration accounts are out of credit (402/insufficient_credits), so the tool-capable agent cannot run
