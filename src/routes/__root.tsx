@@ -12,6 +12,9 @@ import { useEffect, type ReactNode } from "react";
 import "../styles/app.css";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 
+// Block the OpenUI library's dev-only "OpenUI Inspect" floating panel (it covers the chat).
+(globalThis as Record<symbol, unknown>)[Symbol.for("openui.devtools.autoMount")] = true;
+
 // First-paint colours match the stored theme. Do not render a fake app frame
 // here: on a slow or interrupted connection it looks like an endless loader.
 const BOOT_STYLE = `
