@@ -1,4 +1,4 @@
-/** @doc Mobile settings — manus-style dark grouped list (matches reference design). */
+/** @doc Mobile settings — dark grouped list (matches reference design). */
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -61,7 +61,7 @@ const initialsOf = (name: string) =>
     .map((p) => p[0]?.toUpperCase() ?? "")
     .join("") || "U";
 
-const ManusSettingsMobile = () => {
+const SettingsMobile = () => {
   const navigate = useNavigate();
   const account = useActiveAccount();
   const lang = useUserLang();
@@ -197,4 +197,4 @@ const ManusSettingsMobile = () => {
   );
 };
 
-export default ManusSettingsMobile;
+export default SettingsMobile;

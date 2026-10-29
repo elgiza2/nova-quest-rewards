@@ -1,7 +1,6 @@
 /** Server-only Deep Research proxy (dev/Vite transport adapter).
  *
- * Uses the project's own provider (abliteration.ai) — the same upstream as the
- * chat proxy and the production edge function. Prompts, depth scaling and
+ * Uses Cerebras, the same text provider as the chat proxy. Prompts, depth scaling and
  * validation live in `deepResearchShared.ts` so this stays in lockstep with
  * `supabase/functions/deep-research/core.ts`; only the runtime differs.
  */
@@ -12,16 +11,12 @@ import {
   validateResearchPayload,
   type ResearchPayload,
 } from "./deepResearchShared";
-import { getAbliterationKey } from "../keys/abliterationKey";
+import { CEREBRAS_BASE as BASE, CEREBRAS_MODELS, getCerebrasKeys } from "../keys/cerebrasKey";
 
-const BASE = (process.env.ABLITERATION_API_BASE || "https://api.abliteration.ai/v1").replace(
-  /\/$/,
-  "",
-);
-const RESEARCH_MODEL = "abliterated-model-large";
+const RESEARCH_MODEL = CEREBRAS_MODELS.text;
 
 async function apiKey(): Promise<string> {
-  return (await getAbliterationKey()).trim();
+  return ((await getCerebrasKeys())[0]?.api_key ?? "").trim();
 }
 
 export async function streamDeepResearch(
@@ -33,7 +28,7 @@ export async function streamDeepResearch(
     return Response.json(
       {
         error: "Deep Research is not configured: no active provider key.",
-        missingEnv: "ABLITERATION_API_KEY",
+        missingEnv: "CEREBRAS_API_KEY",
       },
       { status: 500 },
     );
@@ -63,8 +58,7 @@ export async function streamDeepResearch(
           { role: "user", content: input },
         ],
         reasoning_effort: scale.effort,
-        web_search_options: { search_count: scale.requestSearches },
-        max_tokens: scale.maxOutputTokens,
+        max_completion_tokens: scale.maxOutputTokens,
       }),
       signal: request?.signal,
     });

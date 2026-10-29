@@ -6,7 +6,7 @@
  * `browser_use_keys` table (rotatable, with cooldowns), then the legacy
  * `manus_keys` / `provider_api_keys` pools, then the function secret.
  *
- * Text models are a separate concern and live in `abliteration.ts`.
+ * Text models are a separate concern and live in `textModel.ts`.
  */
 import { noteKeyFail, noteKeyOk, vaultKeys, type VaultKey } from "./keyVault.ts";
 

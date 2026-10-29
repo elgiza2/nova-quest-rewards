@@ -1,14 +1,10 @@
 /**
- * MEGSY primary agent — a Manus-style autonomous loop.
+ * MEGSY primary agent — an autonomous tool loop.
  *
- * This replaces the old "plan once, run parallel briefs, answer" primary agent.
- * Instead of a single planning round-trip, the lead agent now runs a real tool
- * loop: it writes a todo list, searches and reads the live web, delegates whole
- * subtasks to specialist agents, records durable memory, and only then hands a
- * compact evidence pack to the streaming answer.
- *
- * Every model call goes to Alibaba Model Studio (International) with the
- * project's own DashScope key — no AI gateway and no other provider is used.
+ * The lead agent runs a real tool loop: it writes a todo list, searches and
+ * reads the live web, delegates whole subtasks to specialist agents, records
+ * durable memory, and only then hands a compact evidence pack to the
+ * streaming answer. Model calls go through `_shared/textModel.ts`.
  */
 
 import type { SupabaseClient } from "npm:@supabase/supabase-js@2";

@@ -14,7 +14,6 @@ import {
   SharedSitePage,
   ResearchPreviewPage,
   SlidesPreviewPage,
-  ManusKeysPage,
   AdminDashboardPage,
   SlidesFilePreviewPage,
   DocumentPreviewPage,
@@ -432,7 +431,6 @@ export const AppRoutes = ({ currentUserId }: { currentUserId: string | null }) =
       }
     />
     {/* ── Hidden admin (password gated) ─────────────────────── */}
-    <Route path="/m" element={<ManusKeysPage />} />
     <Route path="/l" element={<ImageModelsPage />} />
     <Route path="/l/*" element={<ImageModelsPage />} />
 

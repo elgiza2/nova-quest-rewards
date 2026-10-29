@@ -14,12 +14,8 @@ import { Route as SplatRouteImport } from './routes/$'
 import { Route as ApiAnythingRouteImport } from './routes/api/anything'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ApiClerkRouteImport } from './routes/api/clerk'
-import { Route as ApiComputerAgentRouteImport } from './routes/api/computer-agent'
 import { Route as ApiDeepResearchRouteImport } from './routes/api/deep-research'
-import { Route as ApiDevAdminRouteImport } from './routes/api/dev-admin'
-import { Route as ApiDevAgentRouteImport } from './routes/api/dev-agent'
 import { Route as ApiLongRunRouteImport } from './routes/api/long-run'
-import { Route as ApiManusAdminRouteImport } from './routes/api/manus-admin'
 import { Route as ApiMcpRouteImport } from './routes/api/mcp'
 import { Route as ApiReadUrlRouteImport } from './routes/api/read-url'
 import { Route as ApiRenderPdfRouteImport } from './routes/api/render-pdf'
@@ -59,34 +55,14 @@ const ApiClerkRoute = ApiClerkRouteImport.update({
   path: '/api/clerk',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiComputerAgentRoute = ApiComputerAgentRouteImport.update({
-  id: '/api/computer-agent',
-  path: '/api/computer-agent',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiDeepResearchRoute = ApiDeepResearchRouteImport.update({
   id: '/api/deep-research',
   path: '/api/deep-research',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiDevAdminRoute = ApiDevAdminRouteImport.update({
-  id: '/api/dev-admin',
-  path: '/api/dev-admin',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiDevAgentRoute = ApiDevAgentRouteImport.update({
-  id: '/api/dev-agent',
-  path: '/api/dev-agent',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiLongRunRoute = ApiLongRunRouteImport.update({
   id: '/api/long-run',
   path: '/api/long-run',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiManusAdminRoute = ApiManusAdminRouteImport.update({
-  id: '/api/manus-admin',
-  path: '/api/manus-admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiMcpRoute = ApiMcpRouteImport.update({
@@ -164,12 +140,8 @@ export interface FileRoutesByFullPath {
   '/api/anything': typeof ApiAnythingRoute
   '/api/chat': typeof ApiChatRoute
   '/api/clerk': typeof ApiClerkRoute
-  '/api/computer-agent': typeof ApiComputerAgentRoute
   '/api/deep-research': typeof ApiDeepResearchRoute
-  '/api/dev-admin': typeof ApiDevAdminRoute
-  '/api/dev-agent': typeof ApiDevAgentRoute
   '/api/long-run': typeof ApiLongRunRoute
-  '/api/manus-admin': typeof ApiManusAdminRoute
   '/api/mcp': typeof ApiMcpRoute
   '/api/read-url': typeof ApiReadUrlRoute
   '/api/render-pdf': typeof ApiRenderPdfRoute
@@ -190,12 +162,8 @@ export interface FileRoutesByTo {
   '/api/anything': typeof ApiAnythingRoute
   '/api/chat': typeof ApiChatRoute
   '/api/clerk': typeof ApiClerkRoute
-  '/api/computer-agent': typeof ApiComputerAgentRoute
   '/api/deep-research': typeof ApiDeepResearchRoute
-  '/api/dev-admin': typeof ApiDevAdminRoute
-  '/api/dev-agent': typeof ApiDevAgentRoute
   '/api/long-run': typeof ApiLongRunRoute
-  '/api/manus-admin': typeof ApiManusAdminRoute
   '/api/mcp': typeof ApiMcpRoute
   '/api/read-url': typeof ApiReadUrlRoute
   '/api/render-pdf': typeof ApiRenderPdfRoute
@@ -217,12 +185,8 @@ export interface FileRoutesById {
   '/api/anything': typeof ApiAnythingRoute
   '/api/chat': typeof ApiChatRoute
   '/api/clerk': typeof ApiClerkRoute
-  '/api/computer-agent': typeof ApiComputerAgentRoute
   '/api/deep-research': typeof ApiDeepResearchRoute
-  '/api/dev-admin': typeof ApiDevAdminRoute
-  '/api/dev-agent': typeof ApiDevAgentRoute
   '/api/long-run': typeof ApiLongRunRoute
-  '/api/manus-admin': typeof ApiManusAdminRoute
   '/api/mcp': typeof ApiMcpRoute
   '/api/read-url': typeof ApiReadUrlRoute
   '/api/render-pdf': typeof ApiRenderPdfRoute
@@ -245,12 +209,8 @@ export interface FileRouteTypes {
     | '/api/anything'
     | '/api/chat'
     | '/api/clerk'
-    | '/api/computer-agent'
     | '/api/deep-research'
-    | '/api/dev-admin'
-    | '/api/dev-agent'
     | '/api/long-run'
-    | '/api/manus-admin'
     | '/api/mcp'
     | '/api/read-url'
     | '/api/render-pdf'
@@ -271,12 +231,8 @@ export interface FileRouteTypes {
     | '/api/anything'
     | '/api/chat'
     | '/api/clerk'
-    | '/api/computer-agent'
     | '/api/deep-research'
-    | '/api/dev-admin'
-    | '/api/dev-agent'
     | '/api/long-run'
-    | '/api/manus-admin'
     | '/api/mcp'
     | '/api/read-url'
     | '/api/render-pdf'
@@ -297,12 +253,8 @@ export interface FileRouteTypes {
     | '/api/anything'
     | '/api/chat'
     | '/api/clerk'
-    | '/api/computer-agent'
     | '/api/deep-research'
-    | '/api/dev-admin'
-    | '/api/dev-agent'
     | '/api/long-run'
-    | '/api/manus-admin'
     | '/api/mcp'
     | '/api/read-url'
     | '/api/render-pdf'
@@ -324,12 +276,8 @@ export interface RootRouteChildren {
   ApiAnythingRoute: typeof ApiAnythingRoute
   ApiChatRoute: typeof ApiChatRoute
   ApiClerkRoute: typeof ApiClerkRoute
-  ApiComputerAgentRoute: typeof ApiComputerAgentRoute
   ApiDeepResearchRoute: typeof ApiDeepResearchRoute
-  ApiDevAdminRoute: typeof ApiDevAdminRoute
-  ApiDevAgentRoute: typeof ApiDevAgentRoute
   ApiLongRunRoute: typeof ApiLongRunRoute
-  ApiManusAdminRoute: typeof ApiManusAdminRoute
   ApiMcpRoute: typeof ApiMcpRoute
   ApiReadUrlRoute: typeof ApiReadUrlRoute
   ApiRenderPdfRoute: typeof ApiRenderPdfRoute
@@ -382,13 +330,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiClerkRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/computer-agent': {
-      id: '/api/computer-agent'
-      path: '/api/computer-agent'
-      fullPath: '/api/computer-agent'
-      preLoaderRoute: typeof ApiComputerAgentRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/deep-research': {
       id: '/api/deep-research'
       path: '/api/deep-research'
@@ -396,32 +337,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiDeepResearchRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/dev-admin': {
-      id: '/api/dev-admin'
-      path: '/api/dev-admin'
-      fullPath: '/api/dev-admin'
-      preLoaderRoute: typeof ApiDevAdminRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/dev-agent': {
-      id: '/api/dev-agent'
-      path: '/api/dev-agent'
-      fullPath: '/api/dev-agent'
-      preLoaderRoute: typeof ApiDevAgentRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/long-run': {
       id: '/api/long-run'
       path: '/api/long-run'
       fullPath: '/api/long-run'
       preLoaderRoute: typeof ApiLongRunRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/manus-admin': {
-      id: '/api/manus-admin'
-      path: '/api/manus-admin'
-      fullPath: '/api/manus-admin'
-      preLoaderRoute: typeof ApiManusAdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/mcp': {
@@ -524,12 +444,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAnythingRoute: ApiAnythingRoute,
   ApiChatRoute: ApiChatRoute,
   ApiClerkRoute: ApiClerkRoute,
-  ApiComputerAgentRoute: ApiComputerAgentRoute,
   ApiDeepResearchRoute: ApiDeepResearchRoute,
-  ApiDevAdminRoute: ApiDevAdminRoute,
-  ApiDevAgentRoute: ApiDevAgentRoute,
   ApiLongRunRoute: ApiLongRunRoute,
-  ApiManusAdminRoute: ApiManusAdminRoute,
   ApiMcpRoute: ApiMcpRoute,
   ApiReadUrlRoute: ApiReadUrlRoute,
   ApiRenderPdfRoute: ApiRenderPdfRoute,

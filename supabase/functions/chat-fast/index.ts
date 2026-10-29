@@ -160,7 +160,7 @@ function guestAllowance(bucket: string): { ok: boolean; retryAfterSeconds: numbe
 
 import { AGENT_MODEL, callAgentFallback, hasAgentProvider } from "../_shared/agentFallback.ts";
 import { callCerebras, CEREBRAS_MODELS } from "../_shared/cerebras.ts";
-import { hasModelProvider } from "../_shared/abliteration.ts";
+import { hasModelProvider } from "../_shared/textModel.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 /** Service-role client used only to read the rotatable model key pool. */

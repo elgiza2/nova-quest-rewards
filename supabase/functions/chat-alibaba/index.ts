@@ -23,10 +23,9 @@ const headers = {
     "authorization, x-client-info, apikey, content-type, x-anon-fingerprint",
 };
 
-// The only text-model provider is abliteration.ai (see `_shared/abliteration.ts`).
-// Browsing/computer work runs on Browser Use Cloud. No other AI provider is used.
-import { AGENT_MODEL, callAgentFallback } from "../_shared/agentFallback.ts";
-import { callModel, MODELS, resolveModel } from "../_shared/abliteration.ts";
+// Text models: see `_shared/textModel.ts`.
+...
+import { callModel, MODELS, resolveModel } from "../_shared/textModel.ts";
 import { GENUI_PROMPT } from "../_shared/genui.ts";
 
 
@@ -82,7 +81,7 @@ function json(value: unknown, status = 200) {
   });
 }
 
-// Key resolution and rotation live in `_shared/abliteration.ts`.
+// Key resolution and rotation live in `_shared/textModel.ts`.
 
 
 function normalizeMessages(input: Message[]): Message[] | null {
@@ -104,7 +103,7 @@ function normalizeMessages(input: Message[]): Message[] | null {
 }
 
 /**
- * One model call on abliteration.ai, trying every model on the ladder and every
+ * One text-model call, trying every model on the ladder and every
  * active key. When no key works, the turn is handed to Browser Use Cloud, which
  * brings its own LLM, so the user still gets a complete answer.
  */
