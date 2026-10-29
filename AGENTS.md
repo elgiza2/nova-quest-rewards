@@ -25,3 +25,4 @@
 - Provider key-use bookkeeping runs at stream completion inside a passthrough transform, not before returning the response. Why: retain accounting within the response lifetime without blocking first-byte delivery.
 - Chat visuals use only the glass `widget` format; the browser re-sends GENUI_PROMPT as the final customSystem block and blocks the OpenUI devtools auto-mount. Why: the deployed server prompt may lag, and the dev inspector covered the chat.
 - Edge text routing falls back to the Lovable AI gateway after Cerebras and before the browser agent; the provider breaker also blocks 404 (archived) models. Why: dead/archived Cerebras models cost ~10s per turn.
+- Widget connect buttons (data-connect / megsy.connect) are handled by the host page via connectFromWidget, so apps connect in-chat. Why: the sandboxed drawing cannot open sign-in windows itself.
