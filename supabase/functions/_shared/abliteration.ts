@@ -142,7 +142,11 @@ export function normalizePayload(payload: Record<string, unknown>): Record<strin
 const GATEWAY_MODEL = "google/gemini-3-flash-preview";
 async function callGateway(payload: Record<string, unknown>): Promise<ModelResponse | null> {
   const key = Deno.env.get("LOVABLE_API_KEY");
-  if (!key || providerBlocked("gateway", GATEWAY_MODEL)) return null;
+  if (!key) {
+    console.log("gateway fallback skipped: LOVABLE_API_KEY not set");
+    return null;
+  }
+  if (providerBlocked("gateway", GATEWAY_MODEL)) return null;
   const {
     agentRole: _r, enable_thinking: _et, thinking_budget: _tb, enable_search: _es, search_options: _so,
     incremental_output: _io, result_format: _rf, include_reasoning: _ir, web_search_options: _ws,
