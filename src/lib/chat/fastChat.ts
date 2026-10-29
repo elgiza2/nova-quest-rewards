@@ -207,9 +207,14 @@ export async function tryFastChat({
 
   // Models sometimes write a short preamble before the hidden route marker
   // ("We need to generate an image using the tool. [[MEGSY_ESCALATE...]]").
-  // Hold back the opening of the answer until it clearly is a real answer, so
-  // such a hand-off never shows up in the chat.
-  const HOLD_CHARS = force ? 0 : 320;
+  // Only routing-like preambles need the defensive hold. Direct answers must
+  // not wait for 320 characters (or completion for a short response).
+  const routingPreambles = ["we need to", "i need to", "let me", "i will use", "i'll use", "خليني", "سأستخدم", "نحتاج إلى"];
+  const needsPreambleHold = (candidate: string) => {
+    if (force) return false;
+    const opening = candidate.toLowerCase();
+    return routingPreambles.some((prefix) => prefix.startsWith(opening) || opening.startsWith(prefix));
+  };
   const anywhereSentinel = /\[\[\s*MEGSY_ESCALATE/i;
   let tail = "";
   const handleContent = (content: string) => {
@@ -219,7 +224,7 @@ export async function tryFastChat({
       if (routeSentinelPattern.test(candidate) || anywhereSentinel.test(candidate))
         throw new Error("__ESCALATE__");
       if (isPossibleRouteSentinel(candidate)) return;
-      if (candidate.length < HOLD_CHARS) return;
+      if (candidate.length < 320 && needsPreambleHold(candidate)) return;
       routeResolved = true;
       const buffered = routePrefix;
       routePrefix = "";
