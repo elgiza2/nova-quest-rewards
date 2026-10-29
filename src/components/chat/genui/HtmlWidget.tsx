@@ -105,6 +105,8 @@ html.dark{--accent:#9b86ff;--accent2:#ffd76a;--info:#b7a4ff}
 .points_wrapper .point{background:var(--tfg,#fff)}
 .stat[class*=" c"] *,.tile[class*=" c"] *{color:inherit}
 .stat[class*=" c"] .small,.tile[class*=" c"] .small{opacity:.85}
+/* 2 or 4 tiles fill the row evenly instead of leaving a half-empty last row */
+.grid:has(> :nth-child(2):last-child),.grid:has(> :nth-child(4):last-child){grid-template-columns:1fr 1fr}
 `;
 
 const BRIDGE = `<script>
