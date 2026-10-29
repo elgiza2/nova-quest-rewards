@@ -54,3 +54,4 @@
 - [x] Webhook + menu button re-registered with secret token; /start verified (200 ok)
 - [x] Telegram sign-in race fix shipped in this publish
 - [x] One-off channel post scheduled for 2026-10-24 02:00 UTC (fires on next bot traffic)
+- [ ] Replace OpenUI chat visuals (remove 'Open UI' button, better-looking renderer)
