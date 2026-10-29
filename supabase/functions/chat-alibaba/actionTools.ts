@@ -1,17 +1,15 @@
 /**
  * @doc Execution toolbelt for MEGSY's primary chat agent.
  *
- * The Manus-style loop in `manus.ts` owns thinking, searching and delegation.
- * This module gives that same loop *hands*: it can ship and deploy real web
- * apps on Freestyle, drive a cloud computer for long tasks, send and read
- * email, generate images/videos/slides, use the user's connected integrations
- * (MCP + Pipedream) and load the user's own skills.
+ * The agent loop in `manus.ts` owns thinking, searching and delegation.
+ * This module gives that loop *hands*: drive a cloud computer for long tasks,
+ * send and read email, generate images/videos/slides, use the user's connected
+ * integrations and load the user's own skills.
  *
  * Everything here runs against the real deployed endpoints with the caller's
  * own token — no mocks, no simulated results.
  */
 import type { SupabaseClient } from "npm:@supabase/supabase-js@2";
-import { deployStaticSite } from "../_shared/freestyle.ts";
 import type { RawCall } from "./manus.ts";
 
 export type ActionCtx = {
@@ -62,35 +60,6 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /** Tool schemas exposed to the lead agent on top of the research tools. */
 export const ACTION_TOOLS = [
-  {
-    type: "function",
-    function: {
-      name: "build_and_deploy_app",
-      description:
-        "Build a real, self-contained web app/site and deploy it live on Freestyle, returning one clean public HTTPS link the user can open immediately. Use for any 'build me a site/app/landing page/tool/game/dashboard' request. Either pass the finished files, or pass only `brief` and the coder will write them.",
-      parameters: {
-        type: "object",
-        properties: {
-          brief: {
-            type: "string",
-            description: "What to build, with all requirements, content and style notes.",
-          },
-          name: { type: "string", description: "Short project name (used for the subdomain)." },
-          files: {
-            type: "array",
-            description:
-              "Optional finished files. Must include a root index.html. Static only (CDN React/Tailwind allowed).",
-            items: {
-              type: "object",
-              properties: { path: { type: "string" }, content: { type: "string" } },
-              required: ["path", "content"],
-            },
-          },
-        },
-        required: ["brief"],
-      },
-    },
-  },
   {
     type: "function",
     function: {
@@ -306,53 +275,6 @@ export async function runActionTool(
   args: any,
 ): Promise<string> {
   switch (name) {
-    case "build_and_deploy_app": {
-      const brief = String(args?.brief ?? "").trim();
-      let files: { path: string; content: string }[] = Array.isArray(args?.files)
-        ? args.files
-            .filter((file: any) => file?.path && typeof file?.content === "string")
-            .map((file: any) => ({ path: String(file.path), content: String(file.content) }))
-        : [];
-      if (!files.some((file) => /^\.?\/?index\.html$/i.test(file.path))) {
-        files = await writeSite(ctx, brief || "A simple one-page site");
-      }
-      if (!files.length) {
-        console.error("build_and_deploy_app: no deployable HTML produced");
-        return "the coder produced no HTML — retry with a clearer, shorter brief";
-      }
-      const slug = String(args?.name ?? "app")
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-|-$/g, "")
-        .slice(0, 24) || "app";
-      const subdomain = `${slug}-${Math.random().toString(36).slice(2, 7)}`;
-      let result;
-      try {
-        result = await deployStaticSite(ctx.admin, files, {
-          subdomain,
-          displayName: `megsy-${slug}`,
-        });
-      } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-        console.error("build_and_deploy_app: deploy failed", message);
-        return `deploy failed: ${message}`;
-      }
-      ctx.send({ site_build: { url: result.url, files: result.files } });
-      if (ctx.userId) {
-        await ctx.admin
-          .from("generated_sites")
-          .insert({
-            user_id: ctx.userId,
-            title: args?.name ? String(args.name).slice(0, 120) : brief.slice(0, 120),
-            prompt: brief.slice(0, 4000),
-            deploy_url: result.url,
-            status: "live",
-          })
-          .then(undefined, () => undefined);
-      }
-      return `deployed and verified live at ${result.url} (files: ${result.files.join(", ")}). Give the user this exact link.`;
-    }
-
     case "computer_task": {
       const goal = String(args?.goal ?? "").trim();
       if (!goal) return "empty goal";
@@ -421,22 +343,11 @@ export async function runActionTool(
 
     case "generate_image": {
       const pick = (d: any) =>
-        d?.url ?? d?.image_url ?? d?.images?.[0]?.url ?? d?.output?.[0] ?? null;
-      const imageArgs = {
+        d?.url ?? d?.image_url ?? d?.image_urls?.[0] ?? null;
+      const data: any = await callFunction(ctx, "anything-api", {
         prompt: String(args?.prompt ?? ""),
         aspect_ratio: args?.aspect_ratio ?? "1:1",
-      };
-      // Runway pool first (it has active keys), then the Wan pool as fallback.
-      let data: any = await callFunction(ctx, "media-image", imageArgs).catch((e: unknown) => ({
-        error: String(e),
-      }));
-      if (!pick(data)) {
-        const wan: any = await callFunction(ctx, "anything-api", {
-          ...imageArgs,
-          model_slug: "wan2.7-image",
-        }).catch((e: unknown) => ({ error: String(e) }));
-        if (pick(wan)) data = wan;
-      }
+      }).catch((e: unknown) => ({ error: String(e) }));
       const url = pick(data);
       if (!url) return `image failed: ${data?.message ?? data?.error ?? "unknown"}`;
       ctx.send({ media: { kind: "image", url } });
@@ -444,13 +355,14 @@ export async function runActionTool(
     }
 
     case "generate_video": {
-      const data = await callFunction(ctx, "media-video", {
+      const data = await callFunction(ctx, "anything-api", {
+        kind: "video",
         prompt: String(args?.prompt ?? ""),
         aspect_ratio: args?.aspect_ratio ?? "16:9",
       });
       if (!data?.job_id) return `video failed: ${data?.message ?? data?.error ?? "unknown"}`;
       ctx.send({ media: { kind: "video", job_id: data.job_id } });
-      return `video job ${data.job_id} started on ${data.provider ?? "provider"} — it renders in the background.`;
+      return `video job ${data.job_id} started — it renders in the background.`;
     }
 
     case "create_slides": {
@@ -554,8 +466,6 @@ export async function runActionTool(
 /** Short label shown next to the tool icon in the chat's thinking trace. */
 export function actionLabel(name: string, args: any): string {
   switch (name) {
-    case "build_and_deploy_app":
-      return String(args?.name ?? args?.brief ?? "").slice(0, 100);
     case "computer_task":
     case "start_background_task":
       return String(args?.goal ?? "").slice(0, 100);
