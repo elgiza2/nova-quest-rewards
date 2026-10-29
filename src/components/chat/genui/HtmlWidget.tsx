@@ -155,7 +155,7 @@ html.dark{--accent:#9b86ff;--accent2:#ffd76a;--info:#b7a4ff}
 /* Priority matrix 2x2 */
 .matrix{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 /* Compact rectangular submit actions; retain the gloss and floating points. */
-button.primary{--round:8px;width:auto!important;max-width:100%;min-width:72px;min-height:34px;padding:6px 14px;flex:0 0 auto;font-size:13px}
+.row:has(>button),.actions,.btns{display:flex!important;flex-wrap:wrap;gap:8px!important;align-items:center;margin-top:12px}.chips,.row:has(>.chip){display:flex!important;flex-wrap:wrap;gap:6px!important;margin:8px 0}.chip{min-height:32px;padding:6px 12px;border-radius:999px;font-size:13px;line-height:1.2;flex:0 0 auto}button.ok,button.no,button:not(.chip):not(.primary){min-height:34px;padding:6px 14px;border-radius:8px;font-size:13px;width:auto!important;flex:0 0 auto}button+button{margin:0}input,textarea,select{width:100%;box-sizing:border-box;margin:6px 0}form>button,.mail button,.card>button:last-child{margin-top:10px}button.primary{--round:8px;width:auto!important;max-width:100%;min-width:72px;min-height:34px;padding:6px 14px;flex:0 0 auto;font-size:13px}
 button.primary .inner{font-size:13px;line-height:1.5}
 button.primary .fold{width:.8rem;height:.8rem}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
