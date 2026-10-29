@@ -2,7 +2,7 @@
 import { useIsMobile } from "@/hooks/use-mobile";
 import DesktopSettingsLayout from "@/components/settings/DesktopSettingsLayout";
 import DesktopSettingsHome from "@/components/settings/DesktopSettingsHome";
-import ManusSettingsMobile from "@/components/settings/ManusSettingsMobile";
+import SettingsMobile from "@/components/settings/SettingsMobile";
 
 const SettingsPage = () => {
   const isMobile = useIsMobile();
@@ -13,7 +13,7 @@ const SettingsPage = () => {
       </DesktopSettingsLayout>
     );
   }
-  return <ManusSettingsMobile />;
+  return <SettingsMobile />;
 };
 
 export default SettingsPage;
