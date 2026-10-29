@@ -350,30 +350,11 @@ export async function runChatStreamTurn(opts: RunChatStreamTurnOptions): Promise
     return t ? `${n} · ${t}` : n;
   };
 
-  // ---------------------------------------------------------------------
-  // Smooth reveal. Some backend paths (tool / MCP turns) flush the whole
-  // answer in a single SSE chunk, which used to make the reply pop in at
-  // once after a long "Thinking…". We keep the full received text as the
-  // source of truth and reveal it progressively so the UI always types.
-  // ---------------------------------------------------------------------
-  let revealedLen = 0;
-  let revealTimer: ReturnType<typeof setInterval> | null = null;
-
-  const stopReveal = () => {
-    if (revealTimer) {
-      clearInterval(revealTimer);
-      revealTimer = null;
-    }
-  };
-
-  const displayedContent = () =>
-    revealedLen >= assistantContent.length
-      ? assistantContent
-      : assistantContent.slice(0, revealedLen);
-
+  // Render received content, not an artificial character-by-character queue.
+  // Coalesce later deltas for one frame; the first delta is shown immediately.
   const flushAssistantUpdate = () => {
     assistantRenderTimer = null;
-    const nextContent = displayedContent();
+    const nextContent = assistantContent;
     setMessages((prev) => {
       const assistantIndex = prev.findIndex((m) => m.clientId === `assistant-${localTurnId}`);
       const targetIndex = assistantIndex >= 0 ? assistantIndex : prev.length - 1;
@@ -413,32 +394,16 @@ export async function runChatStreamTurn(opts: RunChatStreamTurnOptions): Promise
       return;
     }
     if (assistantRenderTimer) return;
-    assistantRenderTimer = setTimeout(flushAssistantUpdate, 33);
-  };
-
-  const startReveal = () => {
-    if (revealTimer) return;
-    revealTimer = setInterval(() => {
-      const remaining = assistantContent.length - revealedLen;
-      if (remaining <= 0) {
-        stopReveal();
-        return;
-      }
-      // Catch up fast on big backlogs, type gently on live token streams.
-      const step = Math.max(4, Math.ceil(remaining / 8));
-      revealedLen = Math.min(assistantContent.length, revealedLen + step);
-      scheduleAssistantUpdate(true);
-    }, 28);
+    assistantRenderTimer = setTimeout(flushAssistantUpdate, 16);
   };
 
   const updateAssistant = (chunk: string) => {
     if (isToolMarkerChunk(chunk)) return;
     const safeChunk = sanitizeStreamChunk(chunk);
-    if (!safeChunk.trim()) return;
+    if (!safeChunk) return;
     if (videoGenerationActive) {
       if (generatedVideos.length > 0) {
         assistantContent = "Here is your video 👇";
-        revealedLen = assistantContent.length;
         scheduleAssistantUpdate(true);
       }
       return;
@@ -449,12 +414,7 @@ export async function runChatStreamTurn(opts: RunChatStreamTurnOptions): Promise
     if (!firstTokenAt) firstTokenAt = Date.now();
     const wasEmpty = assistantContent.length === 0;
     assistantContent += safeChunk;
-    if (wasEmpty) {
-      // Show something instantly, then let the reveal loop take over.
-      revealedLen = Math.min(assistantContent.length, 12);
-      scheduleAssistantUpdate(true);
-    }
-    startReveal();
+    scheduleAssistantUpdate(wasEmpty);
   };
 
   const allMessages = [...messages, userMsg].map((m) => {
@@ -1218,10 +1178,7 @@ export async function runChatStreamTurn(opts: RunChatStreamTurnOptions): Promise
           }));
         }
       }
-      if (assistantRenderTimer) {
-        clearTimeout(assistantRenderTimer);
-        flushAssistantUpdate();
-      }
+      scheduleAssistantUpdate(true);
       if (videoPollPromises.length > 0 && generatedVideos.length === 0) {
         setIsThinking(true);
         await Promise.allSettled(videoPollPromises);
@@ -1328,6 +1285,7 @@ export async function runChatStreamTurn(opts: RunChatStreamTurnOptions): Promise
           .trimEnd();
         assistantContent = `${assistantContent}\n\n${isArabicReport ? "## مصادر" : "## Sources"}\n\n${sourceLines.join("\n")}`;
       }
+      scheduleAssistantUpdate(true);
       settleRunningTools("done");
       setIsLoading(false);
       setIsThinking(false);

@@ -181,6 +181,20 @@ describe("tryFastChat request options", () => {
     expect(await turn).toBe("answered");
   });
 
+  it("shows an ordinary short answer before the provider finishes", async () => {
+    let controller: ReadableStreamDefaultController<Uint8Array> | undefined;
+    const body = new ReadableStream<Uint8Array>({ start(c) { controller = c; } });
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(body, { headers: { "content-type": "text/event-stream" } })));
+    const onDelta = vi.fn();
+    const turn = tryFastChat({ messages: [{ role: "user", content: "ما هي عاصمة مصر؟" }], authToken: "t", fingerprint: "f", onDelta });
+    controller?.enqueue(new TextEncoder().encode('data: {"choices":[{"delta":{"content":"القاهرة"}}]}\n\n'));
+    await vi.waitFor(() => expect(onDelta).toHaveBeenCalledWith("القاهرة"));
+    controller?.enqueue(new TextEncoder().encode('data: {"choices":[{"delta":{"content":" هي العاصمة."}}]}\n\ndata: [DONE]\n\n'));
+    controller?.close();
+    expect(await turn).toBe("answered");
+    expect(onDelta.mock.calls.flat().join("")).toBe("القاهرة هي العاصمة.");
+  });
+
   it("parses a final data: frame without a space or trailing newline", async () => {
     vi.stubGlobal(
       "fetch",
