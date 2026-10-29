@@ -55,6 +55,18 @@ details{border:1px solid var(--line);border-radius:14px;padding:8px 12px;backgro
 .swatch{height:64px;border-radius:14px;border:1px solid var(--line)}
 pre,code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:12.5px}pre{background:#0f1115;color:#e7e9ee;padding:14px;border-radius:var(--rs);overflow:auto;direction:ltr}
 svg text{fill:currentColor;font-family:inherit}
+/* flat, borderless: blend into the conversation */
+body{padding:0}
+.card{background:transparent!important;border:0!important;box-shadow:none!important;padding:0;overflow:visible;border-radius:0}
+.card::before{display:none}
+.glass,.tile,.stat{border:0!important;box-shadow:none!important;backdrop-filter:none;-webkit-backdrop-filter:none;background:var(--soft)}
+.stat[class*=" c"],.tile[class*=" c"],html.dark .stat[class*=" c"],html.dark .tile[class*=" c"]{background:color-mix(in srgb,var(--c) 9%,transparent)}
+.stat .ic,.ic{width:auto;height:auto;background:none!important;box-shadow:none!important;color:var(--c,var(--accent));font-size:15px;opacity:.85;margin-bottom:4px;display:block}
+.hero{margin:0 0 14px;border-radius:var(--rs)}
+details,button,.btn,input,select,textarea,.badge,.swatch{border-color:transparent}
+img:not([src]),img[src=""],.thumb:not([src]){display:none}
+.hero:not(:has(img[src])){height:auto;background:none}.hero:not(:has(img[src]))::after{display:none}.hero:not(:has(img[src]))>div{position:static;color:var(--fg)}.hero:not(:has(img[src])) h2,.hero:not(:has(img[src])) h3{color:var(--fg)}.hero:not(:has(img[src])) p{color:var(--muted)}
+.glass:empty,.tile:empty,.stat:empty,.grid:empty,.card:empty,div:empty:not(.bar>i):not(.swatch):not(.dot):not([style]){display:none}
 .muted{color:var(--muted)}.small{font-size:12px}
 `;
 
@@ -62,7 +74,7 @@ const BRIDGE = `<script>
 window.megsy={send:function(t){parent.postMessage({__megsy:'send',id:window.name,text:String(t)},'*')}};
 document.addEventListener('click',function(e){var c=e.target.closest('.chip[data-toggle],.seat:not([disabled])');if(c)c.classList.toggle('on');var s=e.target.closest('.seg button');if(s){s.parentNode.querySelectorAll('button').forEach(function(b){b.classList.toggle('on',b===s)})}var el=e.target.closest('[data-send]');if(el){e.preventDefault();megsy.send(el.getAttribute('data-send')||el.textContent.trim())}});
 function __h(){parent.postMessage({__megsy:'h',id:window.name,h:Math.ceil(document.body.getBoundingClientRect().height)+8},'*')}
-document.querySelectorAll('img[data-q]').forEach(function(im){fetch('https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*&generator=search&gsrlimit=3&prop=pageimages&piprop=thumbnail&pithumbsize=800&gsrsearch='+encodeURIComponent(im.getAttribute('data-q'))).then(function(r){return r.json()}).then(function(j){var p=Object.values((j.query||{}).pages||{}).sort(function(a,b){return a.index-b.index}).find(function(x){return x.thumbnail});if(p){im.src=p.thumbnail.source}}).catch(function(){})});
+document.addEventListener('error',function(e){if(e.target.tagName==='IMG'){e.target.remove();__h()}},true);document.querySelectorAll('img[data-q]').forEach(function(im){fetch('https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*&generator=search&gsrlimit=3&prop=pageimages&piprop=thumbnail&pithumbsize=800&gsrsearch='+encodeURIComponent(im.getAttribute('data-q'))).then(function(r){return r.json()}).then(function(j){var p=Object.values((j.query||{}).pages||{}).sort(function(a,b){return a.index-b.index}).find(function(x){return x.thumbnail});if(p){im.src=p.thumbnail.source}else{im.remove()}__h()}).catch(function(){im.remove();__h()})});
 new ResizeObserver(__h).observe(document.body);addEventListener('load',__h);document.addEventListener('load',__h,true);[50,300,1000,2500].forEach(function(t){setTimeout(__h,t)});
 </script>`;
 
