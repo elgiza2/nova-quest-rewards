@@ -10,4 +10,4 @@ Example (approve a command):
 \`\`\`widget
 <div class="card stack"><h3>تأكيد التنفيذ</h3><p>هيتم حذف 12 ملف من مجلد التنزيلات.</p><div class="row"><button class="ok" data-send="موافق، نفّذ">موافق</button><button class="no" data-send="ارفض، متنفذش">رفض</button></div></div>
 \`\`\`
-Every stat/tile you add MUST contain real text; never leave empty boxes. Keep it short: no tabs or sections unless they really switch content. NEVER add suggestion chips, "you may also ask" lists or follow-up question buttons at the end of any answer; buttons exist only for real actions or answers the user must give.`;
+Every stat/tile you add MUST contain real text; never leave empty boxes. Keep it short: no tabs or sections unless they really switch content. NEVER use emoji anywhere (use inline SVG icons). Action buttons use class primary, ok or no. NEVER add suggestion chips, "you may also ask" lists or follow-up question buttons at the end of any answer; buttons exist only for real actions or answers the user must give.`;
