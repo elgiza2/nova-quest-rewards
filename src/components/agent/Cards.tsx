@@ -158,7 +158,7 @@ export function VideoProposalCard({
       <div className="ag-card__body space-y-3">
         <p className="rounded-2xl bg-[color:var(--ag-soft)] p-3 leading-relaxed">{proposal.prompt}</p>
         <div className="flex flex-wrap gap-2">
-          {videoModels.map((m) => (
+          {videoModels.map((m, mi) => (
             <button
               key={m.id}
               type="button"
@@ -167,7 +167,7 @@ export function VideoProposalCard({
               onClick={() => (m.locked ? onUpgrade() : setModel(m.id))}
             >
               {m.locked && <Lock size={12} />}
-              {m.label}
+              {`Megsy Video ${mi + 1}`}
               {m.tier === "free" && <span className="text-[11px] text-[color:var(--ag-muted)]">{tr(lang, "Free", "مجاني")}</span>}
             </button>
           ))}
