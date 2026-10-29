@@ -236,8 +236,12 @@ export async function streamChatProxy(
   if (fast) return fast;
 
   // Second fast provider (~0.5s first token) before the slower pools.
-  const gateway = await streamGateway(payload, system, messages, headers);
-  if (gateway) return gateway;
+  // Fast lane only: the full lane must reach the tool-capable agent (media,
+  // files, code, computer) instead of a text-only answer.
+  if (payload?.lane === "fast") {
+    const gateway = await streamGateway(payload, system, messages, headers);
+    if (gateway) return gateway;
+  }
 
   const keys = await getAbliterationKeys();
   if (!keys.length) return json({ error: "Chat provider not configured" }, 503);
