@@ -102,14 +102,20 @@ function hasImagePart(messages: Msg[]): boolean {
  * credit, rate limited, malformed), so the caller transparently falls back to
  * the abliteration pool instead of failing the turn.
  */
+let cerebrasDownUntil = 0;
+
 async function streamCerebras(
   payload: ChatProxyPayload,
   system: string,
   messages: Msg[],
   headers: Record<string, string>,
 ): Promise<Response | null> {
+  if (Date.now() < cerebrasDownUntil) return null;
   const keys = await getCerebrasKeys();
-  if (!keys.length) return null;
+  if (!keys.length) {
+    cerebrasDownUntil = Date.now() + 5 * 60_000;
+    return null;
+  }
   const model = hasImagePart(messages) ? CEREBRAS_MODELS.vision : CEREBRAS_MODELS.text;
   const body = JSON.stringify({
     model,
@@ -155,7 +161,50 @@ async function streamCerebras(
     await markCerebrasFailure(key, resp.status, detail || `upstream_${resp.status}`, retryAfter);
     if (resp.status === 400) return null; // malformed for Cerebras — let the fallback try
   }
+  // Every key failed: skip Cerebras for a while so turns don't pay its latency.
+  cerebrasDownUntil = Date.now() + 5 * 60_000;
   return null;
+}
+
+export const GATEWAY_FAST_MODEL = "google/gemini-3-flash-preview";
+
+/** Lovable AI Gateway fast lane; null when unavailable so callers fall through. */
+async function streamGateway(
+  payload: ChatProxyPayload,
+  system: string,
+  messages: Msg[],
+  headers: Record<string, string>,
+): Promise<Response | null> {
+  const key = process.env.LOVABLE_API_KEY;
+  if (!key) return null;
+  try {
+    const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: GATEWAY_FAST_MODEL,
+        stream: true,
+        max_tokens: Math.min(Math.max(Number(payload?.maxTokens) || 8192, 512), 16384),
+        messages: [{ role: "system", content: system }, ...messages],
+      }),
+    });
+    if (!resp.ok || !resp.body) {
+      console.error("gateway fast lane", resp.status, (await resp.text().catch(() => "")).slice(0, 200));
+      return null;
+    }
+    return new Response(resp.body, {
+      status: 200,
+      headers: {
+        ...headers,
+        "Content-Type": "text/event-stream; charset=utf-8",
+        "Cache-Control": "no-cache, no-transform",
+        Connection: "keep-alive",
+        "x-model-used": GATEWAY_FAST_MODEL,
+      },
+    });
+  } catch {
+    return null;
+  }
 }
 
 export async function streamChatProxy(
@@ -185,6 +234,10 @@ export async function streamChatProxy(
   // cannot serve the turn do we fall through to the abliteration pool below.
   const fast = await streamCerebras(payload, system, messages, headers);
   if (fast) return fast;
+
+  // Second fast provider (~0.5s first token) before the slower pools.
+  const gateway = await streamGateway(payload, system, messages, headers);
+  if (gateway) return gateway;
 
   const keys = await getAbliterationKeys();
   if (!keys.length) return json({ error: "Chat provider not configured" }, 503);
