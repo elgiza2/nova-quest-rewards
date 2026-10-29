@@ -1,4 +1,4 @@
-import { memo, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useEffect, useMemo, useState } from "react";
 import LoaderLetters from "./LoaderLetters";
 import { useUserLang } from "@/lib/authI18n";
 import { detectServiceKind } from "./ServiceIcon";
@@ -45,7 +45,7 @@ export const cleanTraceLine = (raw: string): string => {
 
 /**
  * Single quiet "thinking / tools" surface for every turn type.
- * - Collapsed: one line — CSS ring (or dot once done), live headline, elapsed time.
+ * - Collapsed: one line — CSS ring (or dot once done) and live headline.
  * - Expanded: numbered flat rows on a thin gradient rail; no icons, no shadows.
  */
 const ThinkingTrace = ({
@@ -72,14 +72,6 @@ const ThinkingTrace = ({
       return next.length === prev.length ? prev : next.slice(-40);
     });
   }, [steps, status]);
-
-  const startRef = useRef<number>(Date.now());
-  const [elapsed, setElapsed] = useState(0);
-  useEffect(() => {
-    if (!active) return;
-    const id = setInterval(() => setElapsed(Math.round((Date.now() - startRef.current) / 1000)), 1000);
-    return () => clearInterval(id);
-  }, [active]);
 
   const reasoningLines = useMemo(() => {
     if (!text?.trim()) return [] as string[];
@@ -110,13 +102,7 @@ const ThinkingTrace = ({
       ? isAr
         ? `استخدم ${lines.length} ${lines.length === 1 ? "خطوة" : "خطوات"}`
         : `Used ${lines.length} ${lines.length === 1 ? "step" : "steps"}`
-      : isAr
-        ? elapsed > 0
-          ? `فكّر لمدة ${elapsed} ث`
-          : "عرض التفكير"
-        : elapsed > 0
-          ? `Thought for ${elapsed}s`
-          : "Show thinking";
+      : isAr ? "عرض التفكير" : "Show thinking";
 
   return (
     <div
@@ -138,9 +124,6 @@ const ThinkingTrace = ({
           <span key="done" className="mtrace-label" aria-live="polite">
             {label}
           </span>
-        )}
-        {elapsed > 0 && (
-          <span className="mtime">{elapsed}{isAr ? "ث" : "s"}</span>
         )}
         {lines.length > 0 && (
           <span className="mtoggle">{open ? (isAr ? "إخفاء" : "Hide") : (isAr ? "التفاصيل" : "Details")}</span>

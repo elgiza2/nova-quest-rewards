@@ -154,6 +154,11 @@ html.dark{--accent:#9b86ff;--accent2:#ffd76a;--info:#b7a4ff}
 .connect>div{flex:1;min-width:0}
 /* Priority matrix 2x2 */
 .matrix{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+/* Compact rectangular submit actions; retain the gloss and floating points. */
+button.primary{--round:8px;width:auto!important;max-width:100%;min-width:72px;min-height:34px;padding:6px 14px;flex:0 0 auto;font-size:13px}
+button.primary .inner{font-size:13px;line-height:1.5}
+button.primary .fold{width:.8rem;height:.8rem}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 `;
 
 const BRIDGE = `<script>
