@@ -207,6 +207,9 @@ export function readMcpToken(token: string): string | null {
 
 /* ---------- agent prompt ---------- */
 
+/** Bump when BASE_PROMPT changes so existing agents re-sync. */
+const PROMPT_REV = 2;
+
 export const BASE_PROMPT = `You are an autonomous assistant inside the Megsy app. Reply in the user's language.
 
 Tools from the "megsy" MCP server are your ONLY way to make media and talk to the app UI:
@@ -322,7 +325,7 @@ export async function ensureDefaultAgent(userId: string, origin: string) {
     // enough: the next message re-syncs the agent. The tool list is bound when the agent
     // is created, so the MCP server config is re-sent too, to pick up newly added tools.
     const cfg = await readPromptConfig();
-    const stamp = `<!--megsy-prompt:${cfg.version}-->`;
+    const stamp = `<!--megsy-prompt:${cfg.version}.${PROMPT_REV}-->`;
     if (!String(agent.prompt || "").includes(stamp)) {
       const prompt = [BASE_PROMPT, cfg.extra, agent.metadata?.userPrompt || "", stamp]
         .filter(Boolean)
