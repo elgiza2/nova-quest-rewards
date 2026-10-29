@@ -1,5 +1,6 @@
 /** @doc Sign in / sign up — email, Google, Apple and MFA challenge entry. */
 import { forceDarkTheme } from "@/lib/theme";
+import { checkEmailRegistered } from "@/lib/auth/checkEmail.functions";
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { m as motion, AnimatePresence } from "framer-motion";
@@ -193,15 +194,20 @@ const AuthPage = () => {
     setIsSubmitting(true);
 
     try {
-      const { data, error } = await invokeAuth({ action: "check-email", email: normalizedEmail });
-      if (error) throw new Error(error.message);
-      if (typeof data?.exists !== "boolean") throw new Error(data?.error || "Could not check your email. Please try again.");
+      const [{ data, error }, direct] = await Promise.all([
+        invokeAuth({ action: "check-email", email: normalizedEmail }),
+        checkEmailRegistered({ data: { email: normalizedEmail } }).catch(() => ({ exists: null })),
+      ]);
+      const exists = direct.exists === true || data?.exists === true;
+      if (direct.exists === null && typeof data?.exists !== "boolean") {
+        throw new Error(error?.message || data?.error || "Could not check your email. Please try again.");
+      }
       setEmail(normalizedEmail);
-      setUserExists(data.exists);
-      setHas2FA(data.two_factor_enabled === true);
+      setUserExists(exists);
+      setHas2FA(data?.two_factor_enabled === true);
       setPassword("");
       setNewPassword("");
-      setStep(data.exists ? "password" : "create-password");
+      setStep(exists ? "password" : "create-password");
     } catch (e: any) {
       notifyMobileIntroError(translateAuthError(e, "couldNotSendCode"));
     } finally {
