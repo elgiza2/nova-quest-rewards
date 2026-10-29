@@ -231,42 +231,6 @@ export const ACTION_TOOLS = [
 
 export const ACTION_TOOL_NAMES = new Set(ACTION_TOOLS.map((tool) => tool.function.name));
 
-/**
- * Asks the coder ladder for a deployable bundle.
- *
- * A single complete HTML document is requested as raw text (not JSON): models
- * produce far more reliable output that way, and JSON escaping of a full page
- * is the main source of unusable replies.
- */
-async function writeSite(
-  ctx: ActionCtx,
-  brief: string,
-): Promise<{ path: string; content: string }[]> {
-  const system = `You are a senior front-end engineer shipping production sites.
-Return ONE complete HTML document and NOTHING else: no commentary, no markdown fences.
-Requirements: start at <!DOCTYPE html>, inline all CSS and JS, no build step and no local assets. Tailwind via CDN and Google Fonts are allowed. Responsive, accessible, real finished copy (never lorem ipsum or TODOs), and a considered visual identity that matches the brief. Keep it under 400 lines.`;
-  // Some upstream models reject very large max_tokens outright, so the budget
-  // walks down until one call actually returns a document.
-  let text = "";
-  for (const budget of [6000, 3000, 2000]) {
-    const data = await ctx.raw(["qwen3.8-max", "qwen-max", "qwen-plus"], {
-      temperature: 0.4,
-      max_tokens: budget,
-      messages: [
-        { role: "system", content: system },
-        { role: "user", content: brief.slice(0, 6000) },
-      ],
-    });
-    text = String(data?.choices?.[0]?.message?.content ?? "").trim();
-    console.log(`build_and_deploy_app: coder budget ${budget} returned ${text.length} chars`);
-    if (text.length > 200) break;
-  }
-  const fence = text.match(/```(?:html)?\s*([\s\S]*?)```/i);
-  if (fence) text = fence[1].trim();
-  const start = text.search(/<!DOCTYPE html|<html[\s>]/i);
-  if (start < 0) return [];
-  return [{ path: "index.html", content: text.slice(start) }];
-}
 
 /** Runs one execution tool. Returns the text the lead agent sees. */
 export async function runActionTool(
