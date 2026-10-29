@@ -139,6 +139,33 @@ export function normalizePayload(payload: Record<string, unknown>): Record<strin
   return out;
 }
 
+const GATEWAY_MODEL = "google/gemini-3-flash-preview";
+async function callGateway(payload: Record<string, unknown>): Promise<ModelResponse | null> {
+  const key = Deno.env.get("LOVABLE_API_KEY");
+  if (!key || providerBlocked("gateway")) return null;
+  const {
+    agentRole: _r, enable_thinking: _et, thinking_budget: _tb, enable_search: _es, search_options: _so,
+    incremental_output: _io, result_format: _rf, include_reasoning: _ir, web_search_options: _ws,
+    reasoning_effort: _re, ...rest
+  } = payload as Record<string, any>;
+  try {
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ ...rest, model: GATEWAY_MODEL }),
+    });
+    if (response.ok) {
+      noteProviderSuccess("gateway");
+      return { response, model: GATEWAY_MODEL };
+    }
+    console.error(`gateway [${response.status}]: ${(await response.text().catch(() => "")).slice(0, 300)}`);
+    noteProviderFailure("gateway", undefined, response.status);
+  } catch (error) {
+    console.error("gateway request failed", error);
+  }
+  return null;
+}
+
 export interface ModelResponse {
   response: Response;
   model: string;
@@ -160,6 +187,11 @@ export async function callModel(
     : null;
   const cerebras = await callCerebras(models, payload, role, admin);
   if (cerebras) return { response: cerebras.response, model: cerebras.model };
+
+  // Fast OpenAI-compatible fallback (~1s first token, supports tools) before
+  // the multi-second browser agent. No-op when the key is not configured.
+  const gateway = await callGateway(payload);
+  if (gateway) return gateway;
 
   // Legacy fallback provider, kept behind an opt-in switch and off by default.
   if (Deno.env.get("ENABLE_LEGACY_TEXT_PROVIDER") !== "true") return null;
