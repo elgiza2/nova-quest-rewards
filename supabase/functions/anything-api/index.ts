@@ -82,7 +82,7 @@ const json = (body: unknown, status = 200) =>
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 
-async function resolveApiKey(admin: ReturnType<typeof createClient>): Promise<string | null> {
+async function resolveApiKey(admin: any): Promise<string | null> {
   const service = "deapi";
   try {
     const vault = await vaultKeys(service);
