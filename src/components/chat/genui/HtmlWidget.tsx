@@ -103,6 +103,8 @@ html.dark{--accent:#9b86ff;--accent2:#ffd76a;--info:#b7a4ff}
 .bar>i{background:linear-gradient(90deg,#7a5af8,#ffd23f)}
 .big{background:linear-gradient(135deg,#7a5af8,#e8a33d);-webkit-background-clip:text;background-clip:text;color:transparent}
 .points_wrapper .point{background:var(--tfg,#fff)}
+.stat[class*=" c"] *,.tile[class*=" c"] *{color:inherit}
+.stat[class*=" c"] .small,.tile[class*=" c"] .small{opacity:.85}
 `;
 
 const BRIDGE = `<script>
