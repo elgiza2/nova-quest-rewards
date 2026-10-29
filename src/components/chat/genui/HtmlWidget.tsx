@@ -69,8 +69,8 @@ button.ok{background:radial-gradient(65.28% 65.28% at 50% 100%,rgba(110,255,170,
 button.no{background:radial-gradient(65.28% 65.28% at 50% 100%,rgba(255,140,150,.75) 0%,rgba(255,140,150,0) 100%),linear-gradient(0deg,#e5484d,#e5484d)}
 button.primary::before,button.ok::before,button.no::before,button.fx::before{content:"";position:absolute;inset:1px;border-radius:calc(var(--round) - 1px);z-index:0;background:linear-gradient(177.95deg,rgba(255,255,255,.19) 0%,rgba(255,255,255,0) 100%)}
 button.primary:active,button.ok:active,button.no:active,button.fx:active{transform:scale(.95)}
-.fold{z-index:1;position:absolute;top:0;right:0;height:1rem;width:1rem;transition:all .5s ease-in-out;background:radial-gradient(100% 75% at 55%,rgba(223,113,255,.8) 0%,rgba(223,113,255,0) 100%);box-shadow:0 0 3px #000;border-bottom-left-radius:.5rem;border-top-right-radius:var(--round);overflow:hidden}
-.fold::after{content:"";position:absolute;top:0;right:0;width:150%;height:150%;transform:rotate(45deg) translateY(-18px);background-color:#e8e8e8;pointer-events:none}
+.fold{z-index:1;position:absolute;top:0;right:0;height:1.15rem;width:1.15rem;transition:all .5s ease-in-out;background:radial-gradient(100% 75% at 55%,rgba(255,255,255,.55) 0%,rgba(255,255,255,0) 100%);border-bottom-left-radius:.6rem;border-top-right-radius:var(--round);overflow:hidden}
+.fold::after{content:"";position:absolute;top:0;right:0;width:130%;height:130%;transform:rotate(45deg) translateY(-19px);background:linear-gradient(225deg,#fff 0%,rgba(255,255,255,.75) 60%,rgba(255,255,255,0) 100%);pointer-events:none}
 button:hover .fold{margin-top:-1rem;margin-right:-1rem}
 .points_wrapper{overflow:hidden;pointer-events:none;position:absolute;inset:0;z-index:1}
 .points_wrapper .point{bottom:-10px;position:absolute;animation:floating-points infinite ease-in-out;width:2px;height:2px;background:#fff;border-radius:9999px}
@@ -82,11 +82,37 @@ img:not([src]),img[src=""],.thumb:not([src]){display:none}
 .hero:not(:has(img[src])){height:auto;background:none}.hero:not(:has(img[src]))::after{display:none}.hero:not(:has(img[src]))>div{position:static;color:var(--fg)}.hero:not(:has(img[src])) h2,.hero:not(:has(img[src])) h3{color:var(--fg)}.hero:not(:has(img[src])) p{color:var(--muted)}
 .glass:empty,.tile:empty,.stat:empty,.grid:empty,.card:empty,div:empty:not(.bar>i):not(.swatch):not(.dot):not([style]){display:none}
 .muted{color:var(--muted)}.small{font-size:12px}
+/* clean saturated tiles: solid color + bottom glow + rising dots (same treatment as the action buttons) */
+:root{--accent:#7a5af8;--accent2:#ffd23f;--info:#7a5af8}
+html.dark{--accent:#9b86ff;--accent2:#ffd76a;--info:#b7a4ff}
+.c1{--c:#7a5af8;--glow:rgba(223,113,255,.85)}
+.c2{--c:#2f6bff;--glow:rgba(125,180,255,.85)}
+.c3{--c:#e8a33d;--glow:rgba(255,214,140,.9);--tfg:#2a1c04}
+.c4{--c:#ffd23f;--glow:rgba(255,244,180,.95);--tfg:#2a1c04}
+.c5{--c:#6d4de0;--glow:rgba(185,155,255,.85)}
+.c6{--c:#00a8d9;--glow:rgba(125,225,255,.85)}
+.stat[class*=" c"],.tile[class*=" c"],html.dark .stat[class*=" c"],html.dark .tile[class*=" c"]{position:relative;isolation:isolate;overflow:hidden;border:0!important;box-shadow:0 16px 30px -22px var(--c)!important;border-radius:20px;padding:14px;color:var(--tfg,#fff);background:radial-gradient(65.28% 65.28% at 50% 100%,var(--glow) 0%,rgba(255,255,255,0) 100%),linear-gradient(0deg,var(--c),var(--c))!important;backdrop-filter:none;-webkit-backdrop-filter:none}
+.stat[class*=" c"]::before,.tile[class*=" c"]::before{content:"";position:absolute;inset:1px;border-radius:19px;z-index:0;pointer-events:none;background:linear-gradient(177.95deg,rgba(255,255,255,.22) 0%,rgba(255,255,255,0) 100%)}
+.stat[class*=" c"]>*:not(.points_wrapper),.tile[class*=" c"]>*:not(.points_wrapper){position:relative;z-index:2}
+.stat[class*=" c"] b,.tile[class*=" c"] b,.stat[class*=" c"] .big,.tile[class*=" c"] .big{color:var(--tfg,#fff)}
+.stat[class*=" c"] span:not(.ic),.tile[class*=" c"] span:not(.ic),html.dark .stat[class*=" c"] span:not(.ic){color:color-mix(in srgb,var(--tfg,#fff) 78%,transparent)}
+.stat[class*=" c"] .ic,.tile[class*=" c"] .ic{color:var(--tfg,#fff);opacity:.9}
+.stat[class*=" c"] .bar,.tile[class*=" c"] .bar{background:color-mix(in srgb,var(--tfg,#fff) 22%,transparent)}
+.stat[class*=" c"] .bar>i,.tile[class*=" c"] .bar>i{background:var(--tfg,#fff)}
+.hero{background:linear-gradient(120deg,#4b2fd6,#7a5af8 42%,#e8a33d)}
+.bar>i{background:linear-gradient(90deg,#7a5af8,#ffd23f)}
+.big{background:linear-gradient(135deg,#7a5af8,#e8a33d);-webkit-background-clip:text;background-clip:text;color:transparent}
+.points_wrapper .point{background:var(--tfg,#fff)}
+.stat[class*=" c"] *,.tile[class*=" c"] *{color:inherit}
+.stat[class*=" c"] .small,.tile[class*=" c"] .small{opacity:.85}
+/* 2 or 4 tiles fill the row evenly instead of leaving a half-empty last row */
+.grid:has(> :nth-child(2):last-child),.grid:has(> :nth-child(4):last-child){grid-template-columns:1fr 1fr}
 `;
 
 const BRIDGE = `<script>
 window.megsy={send:function(t){parent.postMessage({__megsy:'send',id:window.name,text:String(t)},'*')}};
-function fxb(){var re=/[\\u{1F300}-\\u{1FAFF}\\u{2600}-\\u{27BF}\\u{1F000}-\\u{1F2FF}\\u{FE0F}\\u{200D}]/gu;var w=document.createTreeWalker(document.body,4);var n;while(n=w.nextNode()){if(/[\\u{1F000}-\\u{1FAFF}\\u{2600}-\\u{27BF}]/u.test(n.nodeValue))n.nodeValue=n.nodeValue.replace(re,'')}document.querySelectorAll('button.primary,button.ok,button.no,button.fx').forEach(function(b){if(b.dataset.fx)return;b.dataset.fx='1';var i=document.createElement('span');i.className='inner';while(b.firstChild)i.appendChild(b.firstChild);b.innerHTML='<span class="fold"></span><span class="points_wrapper">'+'<i class="point"></i>'.repeat(10)+'</span>';b.appendChild(i)})}document.readyState!=='loading'?fxb():document.addEventListener('DOMContentLoaded',fxb);new MutationObserver(function(){fxb()}).observe(document.documentElement,{childList:true,subtree:true});
+function pts(el){if(el.dataset.pts)return;el.dataset.pts='1';var w=document.createElement('span');w.className='points_wrapper';w.innerHTML='<i class="point"></i>'.repeat(10);el.insertBefore(w,el.firstChild)}
+function fxb(){var re=/[\\u{1F300}-\\u{1FAFF}\\u{2600}-\\u{27BF}\\u{1F000}-\\u{1F2FF}\\u{FE0F}\\u{200D}]/gu;var w=document.createTreeWalker(document.body,4);var n;while(n=w.nextNode()){if(/[\\u{1F000}-\\u{1FAFF}\\u{2600}-\\u{27BF}]/u.test(n.nodeValue))n.nodeValue=n.nodeValue.replace(re,'')}document.querySelectorAll('.stat[class*=" c"],.tile[class*=" c"]').forEach(pts);document.querySelectorAll('button.primary,button.ok,button.no,button.fx').forEach(function(b){if(b.dataset.fx)return;b.dataset.fx='1';var i=document.createElement('span');i.className='inner';while(b.firstChild)i.appendChild(b.firstChild);b.innerHTML='<span class="fold"></span><span class="points_wrapper">'+'<i class="point"></i>'.repeat(10)+'</span>';b.appendChild(i)})}document.readyState!=='loading'?fxb():document.addEventListener('DOMContentLoaded',fxb);new MutationObserver(function(){fxb()}).observe(document.documentElement,{childList:true,subtree:true});
 document.addEventListener('click',function(e){var c=e.target.closest('.chip[data-toggle],.seat:not([disabled])');if(c)c.classList.toggle('on');var s=e.target.closest('.seg button');if(s){s.parentNode.querySelectorAll('button').forEach(function(b){b.classList.toggle('on',b===s)})}var el=e.target.closest('[data-send]');if(el){e.preventDefault();megsy.send(el.getAttribute('data-send')||el.textContent.trim())}});
 function __h(){parent.postMessage({__megsy:'h',id:window.name,h:Math.ceil(document.body.getBoundingClientRect().height)+8},'*')}
 document.addEventListener('error',function(e){if(e.target.tagName==='IMG'){e.target.remove();__h()}},true);document.querySelectorAll('img[data-q]').forEach(function(im){fetch('https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*&generator=search&gsrlimit=3&prop=pageimages&piprop=thumbnail&pithumbsize=800&gsrsearch='+encodeURIComponent(im.getAttribute('data-q'))).then(function(r){return r.json()}).then(function(j){var p=Object.values((j.query||{}).pages||{}).sort(function(a,b){return a.index-b.index}).find(function(x){return x.thumbnail});if(p){im.src=p.thumbnail.source}else{im.remove()}__h()}).catch(function(){im.remove();__h()})});
