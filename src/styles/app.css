@@ -115,11 +115,6 @@ html.dark [data-shell="megsy"] .user-bubble.user-bubble.user-bubble{
   animation:mtide 3.6s linear infinite;
 }
 @keyframes mtide{ to{ background-position:-300% 0 } }
-.mtime{
-  flex:0 0 auto; padding:1px 7px; border-radius:999px;
-  font-size:11px; font-variant-numeric:tabular-nums;
-  color:var(--mt-violet); background:color-mix(in srgb, var(--mt-violet) 11%, transparent);
-}
 .mtoggle{
   flex:0 0 auto; margin-inline-start:auto; padding:2px 2px;
   font-size:11.5px; color:hsl(var(--muted-foreground)); opacity:.8;
@@ -152,3 +147,37 @@ html.dark [data-shell="megsy"] .user-bubble.user-bubble.user-bubble{
   .mring{ animation:none }
   .mtrace-label.is-live, .mstep.is-live .mstep-text{ animation:none }
 }
+
+/* Central chat robot shares the Uiverse action palette and rising particles. */
+:root{
+  --chat-fx-violet:#7a5af8;
+  --chat-fx-blue:#2f6bff;
+  --chat-fx-gold:#e8a33d;
+  --chat-fx-yellow:#ffd23f;
+  --chat-fx-glow:rgba(223,113,255,.8);
+  --chat-fx-clear:rgba(223,113,255,0);
+  --chat-fx-highlight:rgba(255,255,255,.22);
+  --chat-fx-point:#fff;
+}
+.ag-orb--chat .ag-orb__body{
+  background:radial-gradient(65.28% 65.28% at 50% 100%,var(--chat-fx-glow),var(--chat-fx-clear)),linear-gradient(120deg,var(--chat-fx-violet),var(--chat-fx-blue),var(--chat-fx-gold),var(--chat-fx-yellow),var(--chat-fx-violet));
+  background-size:100% 100%,300% 100%;
+  box-shadow:none;
+  animation:chat-robot-colors 7s ease-in-out infinite,ag-morph 7s ease-in-out infinite,ag-float 4.5s ease-in-out infinite;
+}
+.ag-orb--chat .ag-orb__body::before{content:"";position:absolute;inset:1px;border-radius:inherit;background:linear-gradient(178deg,var(--chat-fx-highlight),var(--chat-fx-clear));pointer-events:none}
+.ag-orb--chat .ag-orb__particles{position:absolute;inset:0;border-radius:50%;overflow:hidden;pointer-events:none}
+.ag-orb__particles i{position:absolute;bottom:-5px;width:2px;height:2px;border-radius:50%;background:var(--chat-fx-point);animation:chat-robot-points 2.35s ease-in-out infinite}
+.ag-orb__particles i:nth-child(1){left:10%;animation-delay:-.2s}
+.ag-orb__particles i:nth-child(2){left:30%;animation-delay:-.5s}
+.ag-orb__particles i:nth-child(3){left:25%;animation-delay:-1.1s}
+.ag-orb__particles i:nth-child(4){left:44%;animation-delay:-1.8s}
+.ag-orb__particles i:nth-child(5){left:50%;animation-delay:-.9s}
+.ag-orb__particles i:nth-child(6){left:75%;animation-delay:-1.5s}
+.ag-orb__particles i:nth-child(7){left:88%;animation-delay:-.4s}
+.ag-orb__particles i:nth-child(8){left:58%;animation-delay:-1.3s}
+.ag-orb__particles i:nth-child(9){left:94%;animation-delay:-.7s}
+.ag-orb__particles i:nth-child(10){left:65%;animation-delay:-2s}
+@keyframes chat-robot-colors{0%,100%{background-position:0 0,0% 50%}50%{background-position:0 0,100% 50%}}
+@keyframes chat-robot-points{0%{transform:translateY(0);opacity:.8}85%,100%{transform:translateY(-80px);opacity:0}}
+@media(prefers-reduced-motion:reduce){.ag-orb--chat .ag-orb__body{animation:none!important}.ag-orb__particles{display:none}}

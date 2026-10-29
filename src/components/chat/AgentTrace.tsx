@@ -4,7 +4,7 @@
  * While the agent works the list is always visible — no toggle to press. Rows are
  * flat numbered steps on a thin gradient rail: no icons, no shadows, nothing to
  * decode. Once the task finishes the whole history collapses behind a single
- * "Worked for …" line, and nothing is ever thrown away.
+ * completion line, and nothing is ever thrown away.
  */
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { ComputerEvent } from "@/lib/computer/client";
@@ -22,13 +22,6 @@ interface Props {
   className?: string;
 }
 
-function formatDuration(ms: number): string {
-  const total = Math.max(1, Math.round(ms / 1000));
-  const m = Math.floor(total / 60);
-  const s = total % 60;
-  return m > 0 ? `${m}m ${s}s` : `${s}s`;
-}
-
 const isNoise = (line: string) =>
   !line ||
   line.length < 2 ||
@@ -39,13 +32,11 @@ export default function AgentTrace({
   events,
   running,
   status,
-  startedAt,
-  endedAt,
   liveUrl,
   screenDefaultOpen = true,
   className,
 }: Props) {
-  // Finished runs start collapsed behind the "Worked for …" line.
+  // Finished runs start collapsed behind the completion line.
   const [open, setOpen] = useState(false);
   const [screenOpen, setScreenOpen] = useState(screenDefaultOpen);
   const listRef = useRef<HTMLDivElement | null>(null);
@@ -60,13 +51,6 @@ export default function AgentTrace({
     () => events.filter((e) => !isNoise((e.title ?? "").trim())),
     [events],
   );
-
-  const elapsedMs = useMemo(() => {
-    const start = startedAt ? new Date(startedAt).getTime() : NaN;
-    const end = endedAt ? new Date(endedAt).getTime() : Date.now();
-    if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) return null;
-    return end - start;
-  }, [startedAt, endedAt]);
 
   const lastShot = useMemo(
     () => [...rows].reverse().find((e) => e.screenshot_url)?.screenshot_url || null,
@@ -87,7 +71,6 @@ export default function AgentTrace({
     >
       {rows.map((e, i) => {
         const kind = (e.kind ?? "thought") === "thought" ? "thought" : "action";
-        const dur = Number(e.duration ?? 0);
         const title =
           kind === "thought" ? (
             <span className="mstep-text italic">{e.title}</span>
@@ -110,9 +93,6 @@ export default function AgentTrace({
             </span>
             <span className="min-w-0 flex-1">
               {title}
-              {kind === "thought" && dur > 0 && (
-                <span className="mtime ms-1.5">{Math.round(dur)}s</span>
-              )}
             </span>
           </div>
         );
@@ -149,7 +129,7 @@ export default function AgentTrace({
             />
           ) : (
             <iframe
-              src={liveUrl!}
+              src={liveUrl || undefined}
               title=""
               className="h-56 w-full border-0"
               sandbox="allow-scripts allow-same-origin"
@@ -163,7 +143,7 @@ export default function AgentTrace({
   return (
     <div className={cn("mtrace my-3 w-full", className)}>
       {/* While the agent works the steps stand on their own — no button. The
-          "Worked for …" toggle only appears once the run has finished. */}
+          completion toggle only appears once the run has finished. */}
       {!running && (
         <button
           type="button"
@@ -173,7 +153,7 @@ export default function AgentTrace({
         >
           <span className="mdot" aria-hidden />
           <span className="mtrace-label">
-            {elapsedMs ? `Worked for ${formatDuration(elapsedMs)}` : "Worked"}
+            اكتمل العمل
           </span>
           <span className="mtoggle">{open ? "إخفاء" : "التفاصيل"}</span>
         </button>
