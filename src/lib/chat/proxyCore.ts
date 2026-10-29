@@ -9,6 +9,7 @@
  */
 
 import { GENUI_PROMPT } from "@/components/chat/genui/prompt";
+import { withStreamAccounting } from "./streamAccounting";
 import {
   getAbliterationKeys,
   markAbliterationFailure,
@@ -138,8 +139,7 @@ async function streamCerebras(
       continue;
     }
     if (resp.ok && resp.body) {
-      await markCerebrasUse(key);
-      return new Response(resp.body, {
+      return new Response(withStreamAccounting(resp.body, () => markCerebrasUse(key)), {
         status: 200,
         headers: {
           ...headers,
@@ -218,8 +218,10 @@ export async function streamChatProxy(
     }
 
     if (resp.ok && resp.body) {
-      await markAbliterationUse(key);
-      upstream = resp;
+      upstream = new Response(withStreamAccounting(resp.body, () => markAbliterationUse(key)), {
+        status: resp.status,
+        headers: resp.headers,
+      });
       break;
     }
 
