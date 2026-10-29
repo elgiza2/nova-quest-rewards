@@ -1,25 +1,15 @@
 // Parallel runner for the chat-driven media generation flow.
-// Image scenes use `anything-api` (Wan + server-side daily quota); video stays
-// on the existing media-video flow.
-// together and reports progress via callbacks so the UI updates as each result lands.
+// Subscribers generate through Agent Sky; everyone else uses the free image and
+// video service. Reports progress via callbacks so the UI updates as results land.
 
 import { supabase } from "@/integrations/supabase/client";
 import type { MediaPlan, MediaPlanScene } from "@/components/chat/media/MediaPlanCard";
 import type { MediaSceneResult } from "@/components/chat/media/MediaResultCard";
-import { getRunwayVideoPolicy } from "@/lib/runwayModelPolicy";
 
-// Free and paid chat image generation use Wan through the server-side image
-// router. The router owns the free daily quota and never trusts this client slug.
-const IMAGE_FN = "anything-api";
-const FIXED_IMAGE_SLUG = "wan2.7-image";
-
-// Video job pacing depends on the provider. Alibaba Wan runs ~5–6 min end
-// to end, so we show a visible countdown before polling. deAPI usually
-// finishes within seconds, so we skip the wait and poll aggressively.
-const ALIBABA_POLL_INTERVAL_MS = 5_000;
-const ALIBABA_POLL_MAX_MS = 15 * 60_000;
-const DEAPI_POLL_INTERVAL_MS = 3_000;
-const DEAPI_POLL_MAX_MS = 5 * 60_000;
+// Free tier (non-subscribers): one image model and one video model.
+const FREE_FN = "anything-api";
+const FREE_IMAGE_SLUG = "deapi-flux-schnell";
+const FREE_VIDEO_SLUG = "deapi-ltx-video";
 
 interface ScenePartialCb {
   (index: number, previewDataUrl: string, progress: number): void;
@@ -53,10 +43,7 @@ function startProgressTicker(
   };
 }
 
-/** Last-resort image models: always-available slugs tried when the chosen one fails. */
-const IMAGE_FALLBACK_SLUGS = ["deapi-flux-schnell"];
-
-/** Every chat image/video now goes through AgentSky (one provider for the whole app). */
+/** Subscriber media: Agent Sky. */
 async function generateViaAgentSky(
   kind: "image" | "video",
   scene: MediaPlanScene,
@@ -90,42 +77,10 @@ async function generateViaAgentSky(
   }
 }
 
-async function requestImage(
-  scene: MediaPlanScene,
-  modelSlug: string,
-  refs: string[],
-  aspectRatio?: string,
-): Promise<string> {
-  const routerModelSlug = modelSlug === "gen4_image_turbo" ? "runway-gen4-image-turbo" : modelSlug;
-  if (
-    /runway[-_]gen4[-_]image[-_]turbo|^gen4_image_turbo$/i.test(routerModelSlug) &&
-    refs.length === 0
-  ) {
-    throw new Error("selected image model requires a reference image");
-  }
-  const { data, error } = await supabase.functions.invoke(IMAGE_FN, {
-    body: {
-      prompt: scene.prompt,
-      model_slug: routerModelSlug,
-      model: routerModelSlug,
-      num_images: 1,
-      aspect_ratio: aspectRatio,
-      ...(/^(?:runway[-_])?(gpt_image_2_5_flare|gpt_image_2_5_sunburst|seedream5_pro|gpt_image_2|grok_imagine_image_2|muse_image|gemini_image3\.1_flash|gen4_image_turbo)$/i.test(
-        routerModelSlug,
-      )
-        ? { resolution: "1K" }
-        : {}),
-      ...(refs.length > 0
-        ? {
-            reference_image_url: refs[0],
-            image_url: refs[0],
-            reference_image_urls: refs,
-          }
-        : {}),
-    },
-  });
+async function invokeFree(body: Record<string, unknown>): Promise<any> {
+  const { data, error } = await supabase.functions.invoke(FREE_FN, { body });
   if (error) {
-    let detail = error.message || "image gen failed";
+    let detail = error.message || "generation failed";
     try {
       const payload = await (error as any).context?.clone?.().json?.();
       detail = payload?.message || payload?.error || detail;
@@ -140,144 +95,105 @@ async function requestImage(
     throw e;
   }
   if (data?.error) throw new Error(data.message || data.error);
-  const url = data?.image_url || (Array.isArray(data?.image_urls) ? data.image_urls[0] : null);
-  if (!url) throw new Error("no image returned");
-  return url;
+  return data;
+}
+
+/** Non-subscriber image: the free image service with its daily allowance. */
+async function generateFreeImage(
+  scene: MediaPlanScene,
+  onPartial: ScenePartialCb | undefined,
+  aspectRatio?: string,
+): Promise<string> {
+  const stop = startProgressTicker(scene.index, 12_000, onPartial);
+  try {
+    const refs: string[] = Array.isArray((scene as any).reference_image_urls)
+      ? ((scene as any).reference_image_urls as string[])
+      : scene.reference_image_url
+        ? [scene.reference_image_url]
+        : [];
+    const data = await invokeFree({
+      prompt: scene.prompt,
+      model_slug: FREE_IMAGE_SLUG,
+      aspect_ratio: aspectRatio,
+      ...(refs.length ? { reference_image_urls: refs } : {}),
+    });
+    const url = data?.image_url || (Array.isArray(data?.image_urls) ? data.image_urls[0] : null);
+    if (!url) throw new Error("no image returned");
+    onPartial?.(scene.index, url, 1);
+    return url;
+  } finally {
+    stop();
+  }
+}
+
+/** Non-subscriber video: submit to the free service, then poll it. */
+async function generateFreeVideo(
+  scene: MediaPlanScene,
+  onPartial: ScenePartialCb | undefined,
+  aspectRatio?: string,
+): Promise<string> {
+  onPartial?.(scene.index, "", NaN);
+  const data = await invokeFree({
+    kind: "video",
+    prompt: scene.prompt,
+    model_slug: FREE_VIDEO_SLUG,
+    duration: scene.duration_seconds || 5,
+    aspect_ratio: scene.aspect_ratio || aspectRatio,
+    ...(scene.first_frame_url ? { start_frame: scene.first_frame_url } : {}),
+  });
+  const jobId = data?.job_id;
+  if (!jobId) throw new Error("no video job id");
+  const started = Date.now();
+  while (Date.now() - started < 5 * 60_000) {
+    await new Promise((r) => setTimeout(r, 3000));
+    const poll = await invokeFree({ kind: "video_poll", job_id: jobId }).catch(() => null);
+    if (!poll) continue;
+    const reported = Number(poll.progress ?? NaN);
+    if (Number.isFinite(reported) && reported > 0) {
+      onPartial?.(scene.index, "", reported > 1 ? Math.min(0.95, reported / 100) : Math.min(0.95, reported));
+    }
+    if (poll.status === "completed" && poll.video_url) {
+      onPartial?.(scene.index, "", 1);
+      return String(poll.video_url);
+    }
+    if (poll.status === "failed") throw new Error(poll.error || "video job failed");
+  }
+  throw new Error("timeout");
+}
+
+/** Agent Sky answers 402 for accounts without a subscription. */
+export function needsFreeTier(e: unknown): boolean {
+  if ((e as any)?.status === 402) return true;
+  return /upgrade|pro plan|\b402\b/i.test(e instanceof Error ? e.message : String(e));
 }
 
 async function generateImageScene(
   scene: MediaPlanScene,
-  modelSlug: string,
+  _modelSlug: string,
   onPartial?: ScenePartialCb,
   aspectRatio?: string,
 ): Promise<string> {
-  return generateViaAgentSky("image", scene, onPartial, aspectRatio);
-  // Legacy image router path below is kept for reference only.
-  const stopTicker = startProgressTicker(scene.index, 18_000, onPartial);
-  const refs: string[] = Array.isArray((scene as any).reference_image_urls)
-    ? ((scene as any).reference_image_urls as string[])
-    : scene.reference_image_url
-      ? [scene.reference_image_url]
-      : [];
-  // Never silently replace a requested Runway image with another provider.
-  // Other models retain their existing fallback chain.
-  void modelSlug;
-  void IMAGE_FALLBACK_SLUGS;
-  const attempts = [FIXED_IMAGE_SLUG];
   try {
-    let lastErr: unknown = null;
-    for (const slug of attempts) {
-      try {
-        const url = await requestImage(scene, slug, refs, aspectRatio);
-        onPartial?.(scene.index, url, 1);
-        return url;
-      } catch (e) {
-        if ((e as any)?.paywall) throw e;
-        // Reference-only models fall through to the compatible fallback list.
-        lastErr = e;
-      }
-    }
-    throw lastErr instanceof Error ? lastErr : new Error("image gen failed");
-  } finally {
-    stopTicker();
+    return await generateViaAgentSky("image", scene, onPartial, aspectRatio);
+  } catch (e) {
+    if (!needsFreeTier(e)) throw e;
+    return generateFreeImage(scene, onPartial, aspectRatio);
   }
 }
 
 async function generateVideoScene(
   scene: MediaPlanScene,
-  modelSlug: string,
+  _modelSlug: string,
   onPartial?: ScenePartialCb,
   aspectRatio?: string,
   onCountdown?: (index: number, endsAt: number | null) => void,
 ): Promise<string> {
   void onCountdown;
-  return generateViaAgentSky("video", scene, onPartial, aspectRatio);
-  const body: Record<string, unknown> = {
-    prompt: scene.prompt,
-    model_slug: modelSlug,
-    duration: Math.min(
-      scene.duration_seconds || 5,
-      getRunwayVideoPolicy(modelSlug)?.maxDuration ?? Infinity,
-    ),
-    aspect_ratio: scene.aspect_ratio || aspectRatio,
-  };
-  const runwayPolicy = getRunwayVideoPolicy(modelSlug);
-  if (runwayPolicy?.resolution) body.resolution = runwayPolicy.resolution;
-  if (runwayPolicy?.audio === false) body.audio = false;
-  if (scene.first_frame_url) body.start_frame = scene.first_frame_url;
-  if (scene.last_frame_url) body.end_frame = scene.last_frame_url;
-
-  // Videos are treated as async tasks: no fake percent bar while the provider
-  // is rendering. We surface a 5-minute countdown instead (see onCountdown).
-  onPartial?.(scene.index, "", NaN);
-
-  // The video service reserves the monthly allowance atomically. Do not
-  // consume it here as well or a single video costs two quota slots.
   try {
-    const { data, error } = await supabase.functions.invoke("media-video", { body });
-    if (error) {
-      let detail = error.message || "video gen failed";
-      try {
-        const payload = await (error as any).context?.clone?.().json?.();
-        detail = payload?.message || payload?.error || detail;
-      } catch {
-        // FunctionsHttpError.context is not present in older supabase-js builds.
-      }
-      throw new Error(detail);
-    }
-    if (data?.paywall) throw new Error(data.message || "Upgrade required");
-    if (data?.error) throw new Error(data.message || data.error);
-
-    const directUrl = data?.video_url || data?.url;
-    if (directUrl) {
-      onPartial?.(scene.index, "", 1);
-      return String(directUrl);
-    }
-
-    const jobId = data?.job_id || data?.id;
-    if (!jobId) throw new Error("no video job id");
-
-    // Poll immediately for every provider — no blind waiting. Alibaba Wan
-    // tasks keep running server-side, so we just watch until they finish.
-    const isDeapi = String(jobId).startsWith("deapi:");
-    const pollInterval = isDeapi ? DEAPI_POLL_INTERVAL_MS : ALIBABA_POLL_INTERVAL_MS;
-    const pollMax = isDeapi ? DEAPI_POLL_MAX_MS : ALIBABA_POLL_MAX_MS;
-    onCountdown?.(scene.index, null);
-
-    const started = Date.now();
-    while (Date.now() - started < pollMax) {
-      const { data: poll, error: pollErr } = await supabase.functions.invoke("media-video-poll", {
-        body: { job_id: jobId },
-      });
-      if (!pollErr) {
-        const status = poll?.status;
-        const reported = Number(poll?.progress ?? poll?.percent ?? NaN);
-        if (Number.isFinite(reported) && reported > 0) {
-          const norm = reported > 1 ? Math.min(0.95, reported / 100) : Math.min(0.95, reported);
-          onPartial?.(scene.index, "", norm);
-        }
-        if (
-          status === "complete" ||
-          status === "completed" ||
-          status === "succeeded" ||
-          status === "success"
-        ) {
-          const u = poll?.video_url || poll?.url || poll?.output_url;
-          if (u) {
-            onPartial?.(scene.index, "", 1);
-            return String(u);
-          }
-          throw new Error("completed but no URL");
-        }
-        if (status === "failed" || status === "error" || status === "cancelled") {
-          throw new Error(poll?.error || "video job failed");
-        }
-      }
-      await new Promise((r) => setTimeout(r, pollInterval));
-    }
-    throw new Error("timeout");
-  } finally {
-    onCountdown?.(scene.index, null);
+    return await generateViaAgentSky("video", scene, onPartial, aspectRatio);
+  } catch (e) {
+    if (!needsFreeTier(e)) throw e;
+    return generateFreeVideo(scene, onPartial, aspectRatio);
   }
 }
 
