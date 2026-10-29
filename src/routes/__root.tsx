@@ -383,10 +383,45 @@ const ADROLL_SCRIPT = `
 })();
 `;
 
+// Reload once when a stale tab asks for a module chunk that no longer
+// exists after a deploy (entry fails before React mounts, so this must
+// live in the HTML shell itself).
+const STALE_CHUNK_SCRIPT = `
+(function () {
+  var KEY = "megsy-stale-reload";
+  function isStale(msg) {
+    return typeof msg === "string" && (
+      msg.indexOf("Failed to fetch dynamically imported module") !== -1 ||
+      msg.indexOf("error loading dynamically imported module") !== -1 ||
+      msg.indexOf("Importing a module script failed") !== -1
+    );
+  }
+  function recover() {
+    try {
+      if (sessionStorage.getItem(KEY)) return;
+      sessionStorage.setItem(KEY, "1");
+    } catch (e) {}
+    location.reload();
+  }
+  window.addEventListener("error", function (e) {
+    if (isStale(e.message || "")) recover();
+  }, true);
+  window.addEventListener("unhandledrejection", function (e) {
+    var r = e.reason;
+    if (isStale((r && r.message) || String(r || ""))) recover();
+  });
+  window.addEventListener("vite:preloadError", function () { recover(); });
+  window.addEventListener("load", function () {
+    setTimeout(function () { try { sessionStorage.removeItem(KEY); } catch (e) {} }, 5000);
+  });
+})();
+`;
+
 function RootShell({ children }: { children: ReactNode }) {
   return (
     <html lang="en" dir="ltr" className="dark" translate="no" suppressHydrationWarning>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: STALE_CHUNK_SCRIPT }} />
         <script dangerouslySetInnerHTML={{ __html: GTM_SCRIPT }} />
         <script dangerouslySetInnerHTML={{ __html: CLARITY_SCRIPT }} />
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
