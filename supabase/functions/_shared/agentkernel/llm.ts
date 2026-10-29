@@ -2,7 +2,7 @@
  * Server-only LLM bridge for the agent kernel.
  *
  * The kernel runs from cron ticks where there is no user JWT, so it cannot go
- * through the user-facing chat function. It talks to abliteration.ai directly
+ * through the user-facing chat function. It talks to the text model directly
  * (the project's only text-model provider) using the rotatable key pool.
  */
 import type { SupabaseClient } from "npm:@supabase/supabase-js@2";

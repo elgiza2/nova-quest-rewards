@@ -11,7 +11,7 @@
  *   - gpt-oss-120b   → chat, workers, manager, planner, coding, research, final
  *   - qwen-3.8-27b   → cheap lane only (titles, memory extraction, classifiers)
  *   - gemma-4-31b    → last-resort fallback
- * Requested ids that this provider does not serve (Kimi, GLM, abliterated-*)
+ * Requested ids that this provider does not serve (megsy-* and legacy ids)
  * are mapped onto the closest role model instead of 404-ing.
  */
 

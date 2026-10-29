@@ -81,7 +81,7 @@ function json(value: unknown, status = 200) {
   });
 }
 
-// Key resolution and rotation live in `_shared/abliteration.ts`.
+// Key resolution and rotation live in `_shared/textModel.ts`.
 
 
 function normalizeMessages(input: Message[]): Message[] | null {
@@ -103,7 +103,7 @@ function normalizeMessages(input: Message[]): Message[] | null {
 }
 
 /**
- * One model call on abliteration.ai, trying every model on the ladder and every
+ * One text-model call, trying every model on the ladder and every
  * active key. When no key works, the turn is handed to Browser Use Cloud, which
  * brings its own LLM, so the user still gets a complete answer.
  */
