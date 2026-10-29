@@ -1,6 +1,7 @@
 /** @doc Sign in / sign up — email, Google, Apple and MFA challenge entry. */
 import { forceDarkTheme } from "@/lib/theme";
 import { checkEmailRegistered } from "@/lib/auth/checkEmail.functions";
+import { useServerFn } from "@tanstack/react-start";
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { m as motion, AnimatePresence } from "framer-motion";
@@ -55,6 +56,7 @@ type ClipboardField = { name: "email" | "password" | "newPassword" | "otp"; otpI
 type ClipboardMenuState = { x: number; y: number; field: ClipboardField; input: HTMLInputElement };
 
 const AuthPage = () => {
+  const checkRegisteredEmail = useServerFn(checkEmailRegistered);
   // Subscribe to language changes so the whole page re-translates live.
   const uiLang = useUserLang();
   void uiLang;
@@ -194,17 +196,13 @@ const AuthPage = () => {
     setIsSubmitting(true);
 
     try {
-      const [{ data, error }, direct] = await Promise.all([
-        invokeAuth({ action: "check-email", email: normalizedEmail }),
-        checkEmailRegistered({ data: { email: normalizedEmail } }).catch(() => ({ exists: null })),
-      ]);
-      const exists = direct.exists === true || data?.exists === true;
-      if (direct.exists === null && typeof data?.exists !== "boolean") {
-        throw new Error(error?.message || data?.error || "Could not check your email. Please try again.");
+      const { exists } = await checkRegisteredEmail({ data: { email: normalizedEmail } });
+      if (typeof exists !== "boolean") {
+        throw new Error("Could not check your email. Please try again.");
       }
       setEmail(normalizedEmail);
       setUserExists(exists);
-      setHas2FA(data?.two_factor_enabled === true);
+      setHas2FA(false);
       setPassword("");
       setNewPassword("");
       setStep(exists ? "password" : "create-password");
