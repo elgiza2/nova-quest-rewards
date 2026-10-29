@@ -1053,8 +1053,8 @@ export async function runChatStreamTurn(opts: RunChatStreamTurnOptions): Promise
                       await new Promise((r) => setTimeout(r, 4000));
                       try {
                         const { data, error } = await supabase.functions.invoke(
-                          "media-video-poll",
-                          { body: { job_id: jobId } },
+                          "anything-api",
+                          { body: { kind: "video_poll", job_id: jobId } },
                         );
                         if (error) continue;
                         const status = data?.status;

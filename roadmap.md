@@ -66,3 +66,6 @@
 - [x] Remove all icons and every shadow from chat drawings, and make the user message pink.
 - [x] New icon-free, shadow-free design for the thinking steps and agent steps shown while working.
 - [x] When the AI needs information from the user, it must draw the question itself (choice buttons, text box, or any other input type) with its own question label.
+
+- [x] Telegram bot adds keys for the 4 allowed providers only (agentsky, browser-use, cerebras, deapi)
+- [x] Remove other AI providers from main paths (leftover names in model lists/admin page still to clean)

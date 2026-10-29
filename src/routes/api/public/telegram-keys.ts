@@ -1,4 +1,4 @@
-/** Telegram bot that fills the provider key pools (Cerebras / AgentSky / Browser Use).
+/** Telegram bot that fills the provider key pools (Cerebras / AgentSky / Browser Use / deAPI).
  *  Only Telegram (verified by the webhook secret header) can call it; only
  *  registered admins can add, list or remove keys. The first person to send
  *  /start becomes the admin.
@@ -27,12 +27,13 @@ function safeEqual(a: string, b: string) {
 
 const mask = (k: string) => (k.length > 12 ? `${k.slice(0, 6)}…${k.slice(-4)}` : "••••");
 
-type ProviderId = "cerebras" | "agentsky" | "browser-use";
+type ProviderId = "cerebras" | "agentsky" | "browser-use" | "deapi";
 
 const PROVIDERS: Record<ProviderId, { label: string; icon: string }> = {
   cerebras: { label: "Cerebras", icon: "🧠" },
   agentsky: { label: "AgentSky", icon: "🤖" },
   "browser-use": { label: "Browser Use", icon: "🌐" },
+  deapi: { label: "deAPI", icon: "🎨" },
 };
 
 // Webhook instances are stateless, so the pending provider lives in memory AND
@@ -44,6 +45,7 @@ function normalizeProvider(raw: string): ProviderId | null {
   const v = raw.trim().toLowerCase().replace(/_/g, "-");
   if (v === "cerebras" || v === "c") return "cerebras";
   if (v === "agentsky" || v === "agent" || v === "a") return "agentsky";
+  if (v === "deapi" || v === "d") return "deapi";
   if (v === "browser-use" || v === "browseruse" || v === "browser" || v === "b")
     return "browser-use";
   return null;
@@ -53,15 +55,16 @@ const HELP = [
   "🔑 <b>مفاتيح المزودين</b>",
   "",
   "اختار المزود من الأزرار، وبعدين ابعت المفتاح كرسالة عادية.",
-  "أو ابعت مباشرة: <code>/add_cerebras KEY</code> أو <code>/add_agentsky KEY</code> أو <code>/add_browseruse KEY</code>",
+  "أو ابعت مباشرة: <code>/add_cerebras KEY</code> أو <code>/add_agentsky KEY</code> أو <code>/add_browseruse KEY</code> أو <code>/add_deapi KEY</code>",
   "",
   "/keys — عرض كل المزودين",
   "/keys_cerebras — مفاتيح Cerebras",
   "/keys_agentsky — مفاتيح AgentSky",
   "/keys_browseruse — مفاتيح Browser Use",
+  "/keys_deapi — مفاتيح deAPI",
   "/del_cerebras رقم — حذف مفتاح",
   "/on_cerebras رقم — تفعيل مفتاح",
-  "(نفس الصيغة لـ agentsky و browseruse)",
+  "(نفس الصيغة لـ agentsky و browseruse و deapi)",
 ].join("\n");
 
 function providerMenu() {
@@ -71,7 +74,10 @@ function providerMenu() {
         { text: "🧠 Cerebras", callback_data: "keys:provider:cerebras" },
         { text: "🤖 AgentSky", callback_data: "keys:provider:agentsky" },
       ],
-      [{ text: "🌐 Browser Use", callback_data: "keys:provider:browser-use" }],
+      [
+        { text: "🌐 Browser Use", callback_data: "keys:provider:browser-use" },
+        { text: "🎨 deAPI", callback_data: "keys:provider:deapi" },
+      ],
       [{ text: "📊 الإحصائيات", callback_data: "keys:stats" }],
     ],
   };
@@ -98,6 +104,17 @@ async function validateBrowserUseKey(key: string): Promise<boolean> {
     // Credit/auth rejections belong to the key → invalid for rotation.
     if ([401, 402, 403].includes(res.status)) return false;
     return true;
+  } catch {
+    return false;
+  }
+}
+
+async function validateDeapiKey(key: string): Promise<boolean> {
+  try {
+    const res = await fetch("https://api.deapi.ai/api/v1/client/balance", {
+      headers: { Authorization: `Bearer ${key}`, Accept: "application/json" },
+    });
+    return res.status !== 401 && res.status !== 403;
   } catch {
     return false;
   }
@@ -191,6 +208,7 @@ export const Route = createFileRoute("/api/public/telegram-keys")({
                 `🧠 Cerebras: ${counts["cerebras"]?.active ?? 0} نشط / ${counts["cerebras"]?.banned ?? 0} محظور`,
                 `🤖 AgentSky: ${aActive} نشط / ${aOff} متوقف`,
                 `🌐 Browser Use: ${counts["browser-use"]?.active ?? 0} نشط / ${counts["browser-use"]?.banned ?? 0} محظور`,
+                `🎨 deAPI: ${counts["deapi"]?.active ?? 0} نشط / ${counts["deapi"]?.banned ?? 0} محظور`,
                 "",
                 "التدوير تلقائي: الأقل استخدامًا أولًا، وحظر بعد 3 فشل متتالي مع إحياء تلقائي.",
               ].join("\n"),
@@ -275,11 +293,13 @@ export const Route = createFileRoute("/api/public/telegram-keys")({
             );
             return;
           }
-          const vaultProvider = provider === "cerebras" ? "cerebras" : "browser-use";
+          const vaultProvider = provider;
           const ok =
             provider === "cerebras"
               ? await validateCerebrasKey(key)
-              : await validateBrowserUseKey(key);
+              : provider === "deapi"
+                ? await validateDeapiKey(key)
+                : await validateBrowserUseKey(key);
           if (!ok) {
             await reply("المفتاح ده مش شغال عند المزود ❌");
             return;
@@ -319,7 +339,7 @@ export const Route = createFileRoute("/api/public/telegram-keys")({
         }
 
         const addMatch = text.match(
-          /^\/add[_-]?(cerebras|agentsky|agent|browseruse|browser-use|browser)\s+(\S+)\s*$/i,
+          /^\/add[_-]?(cerebras|agentsky|agent|browseruse|browser-use|browser|deapi)\s+(\S+)\s*$/i,
         );
         if (addMatch) {
           const provider = normalizeProvider(addMatch[1]);
@@ -331,7 +351,7 @@ export const Route = createFileRoute("/api/public/telegram-keys")({
         }
 
         const selectMatch = text.match(
-          /^\/(cerebras|agentsky|agent|browseruse|browser-use|browser)\s*$/i,
+          /^\/(cerebras|agentsky|agent|browseruse|browser-use|browser|deapi)\s*$/i,
         );
         if (selectMatch) {
           const provider = normalizeProvider(selectMatch[1]);
@@ -350,8 +370,8 @@ export const Route = createFileRoute("/api/public/telegram-keys")({
             .replace(/_/g, "-")
             .replace(/^-+/, "");
           const only = rest ? normalizeProvider(rest) : null;
-          if (only === "cerebras" || only === "browser-use") {
-            const vaultProvider = only === "cerebras" ? "cerebras" : "browser-use";
+          if (only === "cerebras" || only === "browser-use" || only === "deapi") {
+            const vaultProvider = only;
             await reply(
               formatVaultRows(
                 await listVault(vaultProvider),
@@ -375,16 +395,19 @@ export const Route = createFileRoute("/api/public/telegram-keys")({
               providerMenu(),
             );
           } else if (/^\/keys$/i.test(text)) {
-            const [c, b, a] = await Promise.all([
+            const [c, b, a, d] = await Promise.all([
               listVault("cerebras"),
               listVault("browser-use"),
               listAgentsky(),
+              listVault("deapi"),
             ]);
             await reply(
               [
                 formatVaultRows(c, "🧠", "Cerebras"),
                 "",
                 formatVaultRows(b, "🌐", "Browser Use"),
+                "",
+                formatVaultRows(d, "🎨", "deAPI"),
                 "",
                 a.length
                   ? [
@@ -405,7 +428,7 @@ export const Route = createFileRoute("/api/public/telegram-keys")({
         }
 
         const modMatch = text.match(
-          /^\/(del|on)[_-]?(cerebras|agentsky|agent|browseruse|browser-use|browser)?\s+(\d+)\s*$/i,
+          /^\/(del|on)[_-]?(cerebras|agentsky|agent|browseruse|browser-use|browser|deapi)?\s+(\d+)\s*$/i,
         );
         if (modMatch) {
           const cmd = modMatch[1].toLowerCase();
@@ -425,7 +448,7 @@ export const Route = createFileRoute("/api/public/telegram-keys")({
               await reply(`اتفعل ${mask(row.key_value)} ✅`);
             }
           } else {
-            const vaultProvider = provider === "cerebras" ? "cerebras" : "browser-use";
+            const vaultProvider = provider;
             const row = (await listVault(vaultProvider))[n - 1];
             if (!row) await reply("الرقم ده مش موجود.");
             else if (cmd === "del") {

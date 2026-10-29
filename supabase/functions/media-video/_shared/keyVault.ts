@@ -156,7 +156,7 @@ export function isRateLimited(status: number, message: string) {
 }
 
 export function providerError(status: number, body: string) {
-  return `Runway ${status}: ${body.slice(0, 400)}`;
+  return `upstream ${status}: ${body.slice(0, 400)}`;
 }
 
 export async function noteKeyFail(key: VaultKey, error: string, status = 500) {

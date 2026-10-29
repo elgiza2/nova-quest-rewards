@@ -23,8 +23,8 @@ const headers = {
     "authorization, x-client-info, apikey, content-type, x-anon-fingerprint",
 };
 
-// Text models: see `_shared/textModel.ts`.
-...
+// Text models: see `_shared/textModel.ts`. Browsing/computer work runs on Browser Use Cloud.
+import { AGENT_MODEL, callAgentFallback } from "../_shared/agentFallback.ts";
 import { callModel, MODELS, resolveModel } from "../_shared/textModel.ts";
 import { GENUI_PROMPT } from "../_shared/genui.ts";
 

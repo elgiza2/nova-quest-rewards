@@ -108,12 +108,11 @@ export async function generateCoderImage(
   prompt: string,
   opts: { referenceImageUrl?: string; signal?: AbortSignal } = {},
 ): Promise<string> {
-  const resp = await fetch(fnUrl("media-video"), {
+  const resp = await fetch(fnUrl("anything-api"), {
     method: "POST",
     headers: await authHeaders(),
     signal: opts.signal,
     body: JSON.stringify({
-      kind: "image",
       prompt: `${prompt}. High quality, web-ready, clean composition, no text watermarks.`,
       size: "1024x1024",
       ...(opts.referenceImageUrl
@@ -136,11 +135,11 @@ export async function generateCoderVideo(
   opts: { signal?: AbortSignal } = {},
 ): Promise<string> {
   const headers = await authHeaders();
-  const resp = await fetch(fnUrl("media-video"), {
+  const resp = await fetch(fnUrl("anything-api"), {
     method: "POST",
     headers,
     signal: opts.signal,
-    body: JSON.stringify({ prompt, duration: 5 }),
+    body: JSON.stringify({ kind: "video", prompt, duration: 5 }),
   });
   const text = await resp.text();
   let json: any = null;
@@ -154,10 +153,10 @@ export async function generateCoderVideo(
   while (Date.now() < deadline) {
     if (opts.signal?.aborted) throw new Error("aborted");
     await new Promise((r) => setTimeout(r, 8_000));
-    const p = await fetch(fnUrl("media-video-poll"), {
+    const p = await fetch(fnUrl("anything-api"), {
       method: "POST",
       headers,
-      body: JSON.stringify({ job_id: jobId, task_id: jobId }),
+      body: JSON.stringify({ kind: "video_poll", job_id: jobId }),
     });
     const pj = await p.json().catch(() => null);
     const url = pj?.video_url || pj?.url || pj?.output?.video_url;
