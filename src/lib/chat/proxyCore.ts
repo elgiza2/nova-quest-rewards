@@ -191,7 +191,7 @@ async function streamGateway(
         "Content-Type": "text/event-stream; charset=utf-8",
         "Cache-Control": "no-cache, no-transform",
         Connection: "keep-alive",
-        "x-model-used": GATEWAY_FAST_MODEL,
+        "x-model-used": PROXY_MODELS.fast,
       },
     });
   } catch {
