@@ -181,3 +181,5 @@ html.dark [data-shell="megsy"] .user-bubble.user-bubble.user-bubble{
 @keyframes chat-robot-colors{0%,100%{background-position:0 0,0% 50%}50%{background-position:0 0,100% 50%}}
 @keyframes chat-robot-points{0%{transform:translateY(0);opacity:.8}85%,100%{transform:translateY(-80px);opacity:0}}
 @media(prefers-reduced-motion:reduce){.ag-orb--chat .ag-orb__body{animation:none!important}.ag-orb__particles{display:none}}
+/* robot: blue only */
+:root{--chat-fx-violet:#1e4fd8;--chat-fx-blue:#2f6bff;--chat-fx-gold:#3b82f6;--chat-fx-yellow:#60a5fa;--chat-fx-glow:rgba(96,165,250,.75);--chat-fx-clear:rgba(96,165,250,0)}
