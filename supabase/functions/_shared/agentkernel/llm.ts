@@ -6,7 +6,7 @@
  * (the project's only text-model provider) using the rotatable key pool.
  */
 import type { SupabaseClient } from "npm:@supabase/supabase-js@2";
-import { callModel, MODELS } from "../abliteration.ts";
+import { callModel, MODELS } from "../textModel.ts";
 
 export interface LlmMessage {
   role: "system" | "user" | "assistant";

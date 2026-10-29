@@ -23,10 +23,9 @@ const headers = {
     "authorization, x-client-info, apikey, content-type, x-anon-fingerprint",
 };
 
-// The only text-model provider is abliteration.ai (see `_shared/abliteration.ts`).
-// Browsing/computer work runs on Browser Use Cloud. No other AI provider is used.
-import { AGENT_MODEL, callAgentFallback } from "../_shared/agentFallback.ts";
-import { callModel, MODELS, resolveModel } from "../_shared/abliteration.ts";
+// Text models: see `_shared/textModel.ts`.
+...
+import { callModel, MODELS, resolveModel } from "../_shared/textModel.ts";
 import { GENUI_PROMPT } from "../_shared/genui.ts";
 
 
