@@ -102,14 +102,20 @@ function hasImagePart(messages: Msg[]): boolean {
  * credit, rate limited, malformed), so the caller transparently falls back to
  * the abliteration pool instead of failing the turn.
  */
+let cerebrasDownUntil = 0;
+
 async function streamCerebras(
   payload: ChatProxyPayload,
   system: string,
   messages: Msg[],
   headers: Record<string, string>,
 ): Promise<Response | null> {
+  if (Date.now() < cerebrasDownUntil) return null;
   const keys = await getCerebrasKeys();
-  if (!keys.length) return null;
+  if (!keys.length) {
+    cerebrasDownUntil = Date.now() + 5 * 60_000;
+    return null;
+  }
   const model = hasImagePart(messages) ? CEREBRAS_MODELS.vision : CEREBRAS_MODELS.text;
   const body = JSON.stringify({
     model,
@@ -155,6 +161,8 @@ async function streamCerebras(
     await markCerebrasFailure(key, resp.status, detail || `upstream_${resp.status}`, retryAfter);
     if (resp.status === 400) return null; // malformed for Cerebras — let the fallback try
   }
+  // Every key failed: skip Cerebras for a while so turns don't pay its latency.
+  cerebrasDownUntil = Date.now() + 5 * 60_000;
   return null;
 }
 
