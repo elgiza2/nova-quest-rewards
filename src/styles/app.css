@@ -73,3 +73,79 @@ html.dark [data-shell="megsy"] .user-bubble.user-bubble.user-bubble{
   border:0!important;
   color:#fff!important;
 }
+
+/* ===== Working steps (thinking + agent): flat, icon-free, shadow-free.
+   Violet → pink in the Uiverse tone, CSS-drawn ring instead of any glyph. ===== */
+.mtrace{
+  --mt-violet:#7a5af8;
+  --mt-pink:#ff2d7e;
+  position:relative;
+  min-width:0;
+  margin-block-end:.7rem;
+}
+.mtrace-head{
+  display:flex; align-items:center; gap:.5rem; width:100%;
+  padding:2px 0; border:0; background:none; box-shadow:none;
+  color:hsl(var(--muted-foreground)); text-align:start; cursor:pointer;
+}
+.mtrace-head:disabled{ cursor:default }
+.mring{
+  position:relative; flex:0 0 auto; width:14px; height:14px; border-radius:50%;
+  background:conic-gradient(from 0deg, transparent 0 22%, var(--mt-pink) 58%, var(--mt-violet) 100%);
+  -webkit-mask:radial-gradient(farthest-side, transparent calc(100% - 2.5px), #000 calc(100% - 2.5px));
+          mask:radial-gradient(farthest-side, transparent calc(100% - 2.5px), #000 calc(100% - 2.5px));
+  animation:mspin .9s linear infinite;
+}
+.mring::after{
+  content:""; position:absolute; inset:-5px; border-radius:50%;
+  background:radial-gradient(60% 60% at 50% 50%, rgba(122,90,248,.32), transparent 72%);
+}
+@keyframes mspin{ to{ transform:rotate(1turn) } }
+.mdot{
+  flex:0 0 auto; width:7px; height:7px; border-radius:50%;
+  background:linear-gradient(135deg, var(--mt-violet), var(--mt-pink));
+}
+.mtrace-label{ min-width:0; overflow-wrap:anywhere; font-size:13px; line-height:1.45 }
+.mtrace-label.is-live{
+  background:linear-gradient(90deg, var(--mt-violet), var(--mt-pink), var(--mt-violet)) 0 0/300% 100%;
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+  animation:mtide 3.6s linear infinite;
+}
+@keyframes mtide{ to{ background-position:-300% 0 } }
+.mtime{
+  flex:0 0 auto; padding:1px 7px; border-radius:999px;
+  font-size:11px; font-variant-numeric:tabular-nums;
+  color:var(--mt-violet); background:color-mix(in srgb, var(--mt-violet) 11%, transparent);
+}
+.mtoggle{
+  flex:0 0 auto; margin-inline-start:auto; padding:2px 2px;
+  font-size:11.5px; color:hsl(var(--muted-foreground)); opacity:.8;
+}
+.mtrace-head:hover .mtoggle{ color:var(--mt-violet); opacity:1 }
+.msteps{
+  position:relative; display:flex; flex-direction:column; gap:7px;
+  margin:7px 0 0; padding:0 0 0 16px; padding-inline-start:16px; list-style:none;
+}
+.msteps::before{
+  content:""; position:absolute; inset-block:3px; inset-inline-start:4px; width:2px; border-radius:2px;
+  background:linear-gradient(180deg, var(--mt-violet), var(--mt-pink) 55%, transparent);
+  opacity:.4;
+}
+.mstep{ display:flex; align-items:baseline; gap:8px; min-width:0 }
+.mstep-idx{
+  flex:0 0 auto; font-size:10.5px; font-variant-numeric:tabular-nums;
+  color:var(--mt-violet); opacity:.7;
+}
+.mstep-text{
+  min-width:0; flex:1; overflow-wrap:anywhere;
+  font-size:12.5px; line-height:1.55; color:hsl(var(--muted-foreground));
+}
+.mstep.is-live .mstep-text{
+  background:linear-gradient(90deg, var(--mt-violet), var(--mt-pink), var(--mt-violet)) 0 0/300% 100%;
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+  animation:mtide 3.6s linear infinite;
+}
+@media (prefers-reduced-motion:reduce){
+  .mring{ animation:none }
+  .mtrace-label.is-live, .mstep.is-live .mstep-text{ animation:none }
+}

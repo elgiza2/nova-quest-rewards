@@ -1,8 +1,6 @@
 import { memo, useEffect, useMemo, useRef, useState } from "react";
-import { ChevronDown } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { useUserLang } from "@/lib/authI18n";
-import ServiceIcon, { detectServiceKind } from "./ServiceIcon";
+import { detectServiceKind } from "./ServiceIcon";
 
 export interface ThinkingTraceProps {
   /** Live status line — always the real current operation, never a placeholder. */
@@ -15,7 +13,7 @@ export interface ThinkingTraceProps {
   active?: boolean;
   /** Kept for API compatibility. */
   running?: boolean;
-  /** Real tool family currently executing — drives the service icon. */
+  /** Real tool family currently executing — drives the headline wording. */
   tool?: string | null;
   /** "tools" renders the used-tools timeline after the run ends. */
   variant?: "default" | "tools";
@@ -43,15 +41,14 @@ export const cleanTraceLine = (raw: string): string => {
 
 /**
  * Single quiet "thinking / tools" surface for every turn type.
- * - Collapsed: one line — icon, live headline (shimmer while running), elapsed time.
- * - Expanded: a tidy vertical timeline of real steps (max 3 reasoning lines).
+ * - Collapsed: one line — CSS ring (or dot once done), live headline, elapsed time.
+ * - Expanded: numbered flat rows on a thin gradient rail; no icons, no shadows.
  */
 const ThinkingTrace = ({
   status,
   steps,
   text,
   active,
-  tool,
   variant = "default",
   defaultOpen,
   className = "",
@@ -93,7 +90,7 @@ const ThinkingTrace = ({
 
   const lines = Array.from(new Set([...history, ...reasoningLines]));
   const live = cleanTraceLine(status || "") || history[history.length - 1] || "";
-  const headerKind = tool ? detectServiceKind(tool) : detectServiceKind(live);
+  const headerKind = detectServiceKind(live);
 
   if (!lines.length && !active) return null;
 
@@ -119,48 +116,41 @@ const ThinkingTrace = ({
 
   return (
     <div
-      className={`mb-3 min-w-0 border-s-2 border-border ps-3 ${className}`}
+      className={`mtrace ${className}`}
       dir={rtl ? "rtl" : undefined}
       data-tool-timeline={variant === "tools" ? true : undefined}
     >
-      <Button
-        variant="ghost"
+      <button
         type="button"
         onClick={() => lines.length && setOpen((v) => !v)}
         aria-expanded={open}
-        className="group h-auto min-h-8 max-w-full justify-start gap-2 rounded-md px-0 py-1 text-start text-muted-foreground hover:bg-transparent hover:text-foreground"
+        disabled={!lines.length}
+        className="mtrace-head"
       >
-        <ServiceIcon kind={headerKind} active={!!active} size={15} />
+        {active ? <span className="mring" aria-hidden /> : <span className="mdot" aria-hidden />}
         <span
           key={active ? label : "done"}
-          className={`min-w-0 break-words text-[13px] ${active ? "thinking-shimmer" : ""}`}
+          className={`mtrace-label ${active ? "is-live" : ""}`}
           aria-live="polite"
         >
           {label}
         </span>
-        {elapsed > 0 && <span className="shrink-0 text-xs text-muted-foreground">{elapsed}{isAr ? "ث" : "s"}</span>}
-        {lines.length > 0 && (
-          <ChevronDown
-            className={`h-3.5 w-3.5 shrink-0 opacity-60 transition-transform ${open ? "rotate-180" : ""}`}
-            aria-hidden
-          />
+        {elapsed > 0 && (
+          <span className="mtime">{elapsed}{isAr ? "ث" : "s"}</span>
         )}
-      </Button>
+        {lines.length > 0 && (
+          <span className="mtoggle">{open ? (isAr ? "إخفاء" : "Hide") : (isAr ? "التفاصيل" : "Details")}</span>
+        )}
+      </button>
 
       {open && lines.length > 0 && (
-        <ol className="relative mt-1.5 flex min-w-0 flex-col gap-2 ps-[7px]">
-          <span aria-hidden className="absolute inset-y-1 start-[7px] w-px bg-border" />
+        <ol className="msteps">
           {lines.map((line, i) => (
-            <li key={`${i}-${line.slice(0, 20)}`} className="relative flex min-w-0 items-start gap-2.5 ps-4">
-              <span
-                aria-hidden
-                className={`absolute start-[-3px] top-[7px] h-[7px] w-[7px] rounded-full border border-border bg-background ${
-                  active && i === lines.length - 1 ? "animate-pulse bg-primary" : ""
-                }`}
-              />
-              <span className="min-w-0 flex-1 break-words text-[12.5px] leading-relaxed text-muted-foreground">
-                {line}
+            <li key={`${i}-${line.slice(0, 20)}`} className={`mstep ${active && i === lines.length - 1 ? "is-live" : ""}`}>
+              <span className="mstep-idx" aria-hidden>
+                {String(i + 1).padStart(2, "0")}
               </span>
+              <span className="mstep-text">{line}</span>
             </li>
           ))}
         </ol>
