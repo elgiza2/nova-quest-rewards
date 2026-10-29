@@ -153,7 +153,9 @@ export async function callCerebras(
     let sawRateLimit = false;
     for (const entry of keys) {
       for (const model of ladder) {
-        if (entry.id === "" && providerBlocked("cerebras", model)) continue;
+        // Skip models that just answered 401/402/403/429 on any key: re-walking a
+        // dead account ladder cost ~10s per turn.
+        if (providerBlocked("cerebras", model)) continue;
         const body = cerebrasPayload({ ...payload, model });
         try {
           const response = await fetch(`${BASE}/chat/completions`, {

@@ -40,7 +40,8 @@ export function providerBlocked(provider: string, model?: string): boolean {
 /** Records a failed status; opens the breaker for hard rejections and 429s. */
 export function noteProviderFailure(provider: string, model: string, status: number): void {
   if (openUntil.size > 500) openUntil.clear();
-  if ([401, 402, 403].includes(status)) {
+  // 404 = model archived/removed; it will not come back within the window either.
+  if ([401, 402, 403, 404].includes(status)) {
     // Scope the block to this provider+model, not the whole provider: one
     // model's quota rejection (e.g. gpt-oss-120b 402) must not take down the
     // cheap lane (qwen-3.8-27b) for a full minute — that is what pushed every

@@ -290,7 +290,10 @@ export async function streamChatProxy(
     if (resp.status === 400 && !credit) break; // bad request — rotating won't help
   }
 
-  if (!upstream || !upstream.body) return json({ error: lastError }, 502);
+  // 503 = this local lane has no working provider right now (e.g. every key is
+  // out of credit). The browser treats 503 as "skip the local lane" and serves
+  // the turn from the edge function instead of surfacing a crash.
+  if (!upstream || !upstream.body) return json({ error: lastError }, 503);
 
   return new Response(upstream.body, {
     status: 200,

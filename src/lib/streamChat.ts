@@ -6,6 +6,7 @@ import { readChatModelPreferences } from "@/lib/chatModelPreferences";
 import { edgeAnonKey, edgeUrl } from "@/lib/edgeRuntime";
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from "@/lib/edgeRuntime";
 import { isTrivialTurn, shouldForceFastTurn } from "@/lib/chat/trivialTurn";
+import { GENUI_PROMPT } from "@/components/chat/genui/prompt";
 
 /**
  * Provider keys live server-side in the deployed Supabase functions, so both
@@ -475,6 +476,9 @@ export async function streamChat({
       customSystem = null;
     }
     if (rosterContext) customSystem = `${customSystem || ""}\n\n${rosterContext}`.trim();
+    // Visual format override travels with the turn so the deployed server prompt
+    // (which may still describe OpenUI) is superseded without a redeploy.
+    customSystem = `${customSystem || ""}\n\nFINAL VISUAL RULE (overrides any earlier OpenUI/ui instructions):\n${GENUI_PROMPT}`.trim();
     // Assign a fresh resume id per turn so the server can persist stream
     // chunks and the client can fetch the tail after a network drop.
     const resumeId =

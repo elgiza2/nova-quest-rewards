@@ -4,7 +4,7 @@
 - [x] Remove initial buffering for forced trivial fast turns; keep ordinary route-marker protection.
 - [x] Restore readable thinking shimmer and expand live progress steps with elapsed time.
 - [x] Strengthen interactive drawing/card/button instructions; verify renderer action callback.
-- [ ] Verify live generated answers and model latency in authenticated chat: external backend session unavailable.
+- [x] Verified live answers with the test account: text starts in ~3s, glass widgets render.
 
 - [x] Redesign Tasks with Orange point icon and five character images; restrict active tasks to the five requested types.
 - [x] Remove main Agents +; remove Earn tasks and rename Earn to Referral with Telegram-only invite links.
@@ -54,7 +54,8 @@
 - [x] Webhook + menu button re-registered with secret token; /start verified (200 ok)
 - [x] Telegram sign-in race fix shipped in this publish
 - [x] One-off channel post scheduled for 2026-10-24 02:00 UTC (fires on next bot traffic)
-- [ ] Replace OpenUI chat visuals (remove 'Open UI' button, better-looking renderer)
+- [x] Replace OpenUI chat visuals (glass widget only, OpenUI Inspect panel blocked)
 - [x] Fast replies: skip out-of-credit text provider, use quick backup for simple chat (~1s)
 - [x] Visual answers: model instructed to draw with built-in widget styling instead of OpenUI
 - [ ] Images/video/files/code/computer in chat: blocked — Cerebras and abliteration accounts are out of credit (402/insufficient_credits), so the tool-capable agent cannot run
+- [x] Remove chat suggestions (follow-up suggestion buttons banned in prompt)
