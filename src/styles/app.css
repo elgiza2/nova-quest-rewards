@@ -62,3 +62,14 @@
 .user-bubble-points i:nth-child(9){left:98%;opacity:.6;animation-duration:2.6s;animation-delay:.1s}
 .user-bubble-points i:nth-child(10){left:65%;animation-duration:2.5s;animation-delay:.2s}
 @media (prefers-reduced-motion:reduce){.user-bubble-points{display:none}}
+
+/* user message: solid pink with the same glow + rising dots, no shadow.
+   Triple class + dark variant beats the sunset/primary rules in chat-vivid.css
+   and deferred.css by specificity, so it survives in both themes. */
+.user-bubble.user-bubble.user-bubble,
+html.dark [data-shell="megsy"] .user-bubble.user-bubble.user-bubble{
+  background:radial-gradient(65.28% 65.28% at 50% 100%,rgba(255,125,190,.85) 0%,rgba(255,125,190,0) 100%),linear-gradient(0deg,#ff2d7e,#ff2d7e)!important;
+  box-shadow:none!important;
+  border:0!important;
+  color:#fff!important;
+}
