@@ -541,7 +541,7 @@ export async function streamChat({
         } else {
           // 503 = no local provider key in this environment. Remember that so
           // every later turn skips the dead probe instead of paying for it.
-          if (primary.status === 503 || primary.status === 404) localChatProxyUsable = false;
+          if (primary.status === 503 || primary.status === 404 || primary.headers.get("x-local-unavailable") === "1") localChatProxyUsable = false;
           try {
             await primary.body?.cancel();
           } catch {
