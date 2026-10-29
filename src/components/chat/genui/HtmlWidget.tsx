@@ -85,6 +85,14 @@ export function HtmlWidget({ html, done }: { html: string; done: boolean }) {
   const [h, setH] = useState(120);
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
+  // Unclosed fence (truncated/stopped reply): render once content stops changing.
+  const [settled, setSettled] = useState(false);
+  useEffect(() => {
+    setSettled(false);
+    if (done) return;
+    const t = setTimeout(() => setSettled(true), 2000);
+    return () => clearTimeout(t);
+  }, [html, done]);
 
   useEffect(() => {
     const on = (e: MessageEvent) => {
@@ -106,8 +114,9 @@ export function HtmlWidget({ html, done }: { html: string; done: boolean }) {
     [html, dark],
   );
 
-  if (!done || !mounted) {
-    return <div className="my-4 h-40 animate-pulse rounded-3xl border border-border/60 bg-muted/40" />;
+  if (!html.trim()) return null;
+  if ((!done && !settled) || !mounted) {
+    return <div className="my-4 h-24 animate-pulse rounded-3xl bg-muted/40" />;
   }
   return (
     <iframe
