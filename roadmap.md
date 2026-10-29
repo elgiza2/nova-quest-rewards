@@ -61,3 +61,4 @@
 - [ ] Images/video/files/code/computer in chat: blocked — Cerebras and abliteration accounts are out of credit (402/insufficient_credits), so the tool-capable agent cannot run
 - [x] Remove chat suggestions (follow-up suggestion buttons banned in prompt)
 - [ ] Remove all icons and every shadow from chat drawings, and make the user message pink.
+- [ ] New icon-free, shadow-free design for the thinking steps and agent steps shown while working.
