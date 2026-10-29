@@ -21,7 +21,7 @@ html.dark .card{border-color:rgba(255,255,255,.12)}
 .card>*{position:relative}
 .glass,.tile,.stat{background:rgba(255,255,255,.42);border:1px solid rgba(255,255,255,.6);border-radius:var(--rs);padding:14px;backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 6px 18px -12px rgba(20,30,60,.35)}
 html.dark .glass,html.dark .tile,html.dark .stat{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.12);box-shadow:inset 0 1px 0 rgba(255,255,255,.1)}
-.grid{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(130px,1fr))}.g2{grid-template-columns:1fr 1fr}
+.grid{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(96px,1fr))}.g2{grid-template-columns:1fr 1fr}
 .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.between{justify-content:space-between}.center{justify-content:center;text-align:center}
 .stack>*+*{margin-top:14px}
 .stat b{display:block;font-size:22px;letter-spacing:-.03em;font-variant-numeric:tabular-nums}.stat span{font-size:12px;color:var(--muted)}
