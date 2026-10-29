@@ -80,7 +80,6 @@ import {
   AgentNewPage,
   AgentChatPage,
   AgentHubPage,
-  AgentHubNewPage,
   TeamWorkspacePage,
   AgentSelectionPage,
 } from "./lazyPages";
