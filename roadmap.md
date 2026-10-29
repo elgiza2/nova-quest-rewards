@@ -1,5 +1,7 @@
 # Roadmap
 
+- [ ] Allow computer app access, remove thinking/agent elapsed times, shrink drawn send buttons, and animate the central robot in button colors; verify in browser.
+
 - [x] Fix streaming delays: direct answers release after prefix validation, received text renders without artificial reveal, and provider accounting runs after bytes are delivered; 25 focused tests passed.
 - [x] Remove initial buffering for forced trivial fast turns; keep ordinary route-marker protection.
 - [x] Restore readable thinking shimmer and expand live progress steps with elapsed time.
