@@ -69,8 +69,8 @@ button.ok{background:radial-gradient(65.28% 65.28% at 50% 100%,rgba(110,255,170,
 button.no{background:radial-gradient(65.28% 65.28% at 50% 100%,rgba(255,140,150,.75) 0%,rgba(255,140,150,0) 100%),linear-gradient(0deg,#e5484d,#e5484d)}
 button.primary::before,button.ok::before,button.no::before,button.fx::before{content:"";position:absolute;inset:1px;border-radius:calc(var(--round) - 1px);z-index:0;background:linear-gradient(177.95deg,rgba(255,255,255,.19) 0%,rgba(255,255,255,0) 100%)}
 button.primary:active,button.ok:active,button.no:active,button.fx:active{transform:scale(.95)}
-.fold{z-index:1;position:absolute;top:0;right:0;height:1rem;width:1rem;transition:all .5s ease-in-out;background:radial-gradient(100% 75% at 55%,rgba(223,113,255,.8) 0%,rgba(223,113,255,0) 100%);box-shadow:0 0 3px #000;border-bottom-left-radius:.5rem;border-top-right-radius:var(--round);overflow:hidden}
-.fold::after{content:"";position:absolute;top:0;right:0;width:150%;height:150%;transform:rotate(45deg) translateY(-18px);background-color:#e8e8e8;pointer-events:none}
+.fold{z-index:1;position:absolute;top:0;right:0;height:1.15rem;width:1.15rem;transition:all .5s ease-in-out;background:radial-gradient(100% 75% at 55%,rgba(255,255,255,.55) 0%,rgba(255,255,255,0) 100%);border-bottom-left-radius:.6rem;border-top-right-radius:var(--round);overflow:hidden}
+.fold::after{content:"";position:absolute;top:0;right:0;width:130%;height:130%;transform:rotate(45deg) translateY(-19px);background:linear-gradient(225deg,#fff 0%,rgba(255,255,255,.75) 60%,rgba(255,255,255,0) 100%);pointer-events:none}
 button:hover .fold{margin-top:-1rem;margin-right:-1rem}
 .points_wrapper{overflow:hidden;pointer-events:none;position:absolute;inset:0;z-index:1}
 .points_wrapper .point{bottom:-10px;position:absolute;animation:floating-points infinite ease-in-out;width:2px;height:2px;background:#fff;border-radius:9999px}
