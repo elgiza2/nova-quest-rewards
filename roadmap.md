@@ -15,6 +15,7 @@
 - [ ] Real transfer and authenticated read-back: unavailable without a real payment/session; other networks are disabled pending reliable verification.
 - [ ] X follow and ORANGE purchase rewards: require X account verification and cryptographic wallet ownership proof; opening links never grants points.
 - [ ] Verify fullscreen, native Back and profile image inside an actual Telegram client.
+- [ ] Chat drawings: clean saturated colors (violet #7a5af8 + pink glow, rising dots) on every tile and button, and comparisons/specs must render as a drawing instead of a plain markdown table.
 
 - [x] Rename Megsy/Nova AI → Orange AI (UI + translations + support links @Torekr)
 - [x] Telegram login (Mini App initData → session) + /api/public/telegram-auth
