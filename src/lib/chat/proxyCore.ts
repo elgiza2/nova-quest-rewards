@@ -31,7 +31,7 @@ export const PROXY_MODELS = {
   large: "abliterated-model-large-v2",
 } as const;
 
-const SYSTEM = `You are NOVA, an autonomous general-purpose AI agent made by Megsy LLC (Egypt).
+const SYSTEM = `You are Megsy, an autonomous general-purpose AI agent made by Megsy LLC (Egypt).
 The creator, CEO and only developer is Hamza Hassan Elgzairy. Support: Telegram @Torekr (t.me/Torekr). Website: /.
 Today is ${new Date().toISOString().slice(0, 10)}; the current year is 2026.
 Answer in the exact language and dialect of the user's latest message. Short factual questions stay short; anything involving reasoning, planning, comparison, code or a task gets a full, structured answer with runnable code where relevant.
@@ -236,8 +236,12 @@ export async function streamChatProxy(
   if (fast) return fast;
 
   // Second fast provider (~0.5s first token) before the slower pools.
-  const gateway = await streamGateway(payload, system, messages, headers);
-  if (gateway) return gateway;
+  // Fast lane only: the full lane must reach the tool-capable agent (media,
+  // files, code, computer) instead of a text-only answer.
+  if (payload?.lane === "fast") {
+    const gateway = await streamGateway(payload, system, messages, headers);
+    if (gateway) return gateway;
+  }
 
   const keys = await getAbliterationKeys();
   if (!keys.length) return json({ error: "Chat provider not configured" }, 503);
