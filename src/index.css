@@ -8071,12 +8071,15 @@ a.bg-primary:hover,
 
 /* Calm shimmer for the live thinking headline */
 .thinking-shimmer {
-  background: linear-gradient(90deg, var(--muted-foreground) 0%, var(--muted-foreground) 40%, var(--foreground) 50%, var(--muted-foreground) 60%, var(--muted-foreground) 100%);
+  color: hsl(var(--muted-foreground));
+  background: linear-gradient(90deg, hsl(var(--muted-foreground)) 0%, hsl(var(--muted-foreground)) 40%, hsl(var(--foreground)) 50%, hsl(var(--muted-foreground)) 60%, hsl(var(--muted-foreground)) 100%);
   background-size: 250% 100%;
-  -webkit-background-clip: text; background-clip: text; color: transparent;
+  -webkit-background-clip: text; background-clip: text;
   animation: ai-shimmer 2.4s linear infinite;
 }
 [dir="rtl"] .thinking-shimmer { animation-name: ai-shimmer-rtl; }
+@supports (background-clip: text) { .thinking-shimmer { -webkit-text-fill-color: transparent; } }
+@media (prefers-reduced-motion: reduce) { .thinking-shimmer { animation: none; } }
 
 /* Semantic palette for generated mini-sites, independent of legacy HSL tokens. */
 :root {

@@ -168,6 +168,19 @@ describe("tryFastChat request options", () => {
     expect(onDelta.mock.calls.flat().join("")).toBe("Hello there");
   });
 
+  it("shows a forced greeting before stream completion", async () => {
+    let controller: ReadableStreamDefaultController<Uint8Array> | undefined;
+    const body = new ReadableStream<Uint8Array>({ start(c) { controller = c; } });
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(body, { headers: { "content-type": "text/event-stream" } })));
+    const onDelta = vi.fn();
+    const turn = tryFastChat({ messages: [{ role: "user", content: "Hello" }], authToken: "t", fingerprint: "f", force: true, onDelta });
+    controller?.enqueue(new TextEncoder().encode('data: {"choices":[{"delta":{"content":"Hello"}}]}\n\n'));
+    await vi.waitFor(() => expect(onDelta).toHaveBeenCalledWith("Hello"));
+    controller?.enqueue(new TextEncoder().encode("data: [DONE]\n\n"));
+    controller?.close();
+    expect(await turn).toBe("answered");
+  });
+
   it("parses a final data: frame without a space or trailing newline", async () => {
     vi.stubGlobal(
       "fetch",

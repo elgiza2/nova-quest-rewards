@@ -20,3 +20,5 @@
 - Telegram fullscreen and inset events update shared safe-area variables, and profile pictures synchronize after verified Telegram sign-in. Why: keep native controls clear and returning-user identity current.
 - Telegram sign-in uses one shared in-flight promise and relies on verifyOtp to persist its session. Why: startup and the auth page must not race single-use login tokens or publish duplicate sign-in transitions.
 - Email sign-in intent uses the exact-match TanStack server lookup exclusively; unavailable lookups stop progression instead of implying signup. Why: the legacy deployed auth lookup reports false for existing accounts; password login retains its verified-session MFA check.
+- Forced trivial fast turns stream after sentinel-prefix validation; ordinary turns retain preamble interception. Why: avoid holding short answers until completion without leaking routing markers.
+- SPA thinking shimmer wraps legacy HSL tokens and retains a readable fallback; live progress expands by default using shared Button. Why: invalid gradients hid text and collapsed steps obscured updates.
