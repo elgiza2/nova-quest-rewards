@@ -131,13 +131,13 @@ const ThinkingTrace = ({
         className="mtrace-head"
       >
         {active ? <span className="mring" aria-hidden /> : <span className="mdot" aria-hidden />}
-        <span
-          key={active ? label : "done"}
-          className={`mtrace-label ${active ? "is-live" : ""}`}
-          aria-live="polite"
-        >
-          {label}
-        </span>
+        {active ? (
+          <LoaderLetters key={label} text={label} />
+        ) : (
+          <span key="done" className="mtrace-label" aria-live="polite">
+            {label}
+          </span>
+        )}
         {elapsed > 0 && (
           <span className="mtime">{elapsed}{isAr ? "ث" : "s"}</span>
         )}
