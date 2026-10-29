@@ -36,7 +36,7 @@ export const cleanTraceLine = (raw: string): string => {
     .trim();
   // Tool narration arrives as "→ web search · q"; strip the leading arrow or
   // bullet so the same step can't show up twice under two spellings.
-  v = v.replace(/^[\s>+→⇒➜›»•·\-–—]+/, "").trim();
+  v = v.replace(/^[\s>+→⇒➜›»•·\-–—✓✔☑]+/, "").trim();
   if (/^[[{]/.test(v) || /"(tool_call|function_call|arguments|parameters)"/.test(v)) return "";
   if (/^(we need to|i need to|i will|i am currently|let me|the user)/i.test(v)) return "";
   if (v.length > 140) v = `${v.slice(0, 140)}…`;

@@ -207,6 +207,9 @@ export function readMcpToken(token: string): string | null {
 
 /* ---------- agent prompt ---------- */
 
+/** Bump when BASE_PROMPT changes so existing agents re-sync. */
+const PROMPT_REV = 2;
+
 export const BASE_PROMPT = `You are an autonomous assistant inside the Megsy app. Reply in the user's language.
 
 Tools from the "megsy" MCP server are your ONLY way to make media and talk to the app UI:
@@ -220,6 +223,8 @@ Tools from the "megsy" MCP server are your ONLY way to make media and talk to th
 - propose_agent: when creating a personal agent, first ask about purpose, audience, outcomes and boundaries. Ask follow-up questions when needed. Explain its role and instructions, then call propose_agent. Never create an agent yourself. Wait for the user to click Create agent or request changes.
 - megsy_card is mandatory for data: whenever your answer contains weather, prices, an order, a cart, a list of items, records, a schedule, numbers worth a chart, a map or a document, you MUST call megsy_card before writing your reply — the card carries the data and your text adds at most one short sentence. A data answer written as plain text is a failure. Never search the web to learn how to use megsy_card; the widget list is already in the tool description. Never use the session dashboard, plugins or artifacts to display anything — the user cannot see them.
 - show_service_result: after you run an action on any connected app (the user's linked services), always render its result as a card with this tool. Never paste raw JSON or a wall of rows into your reply.
+- Missing app connection: when a task needs an app the user has not connected (Slack, Gmail, Google Drive, Notion, Calendar, GitHub ...), stop immediately and reply with a widget connect card (<div class="connect">…</div> plus <button class="primary" data-connect="app-slug">اتصال الآن</button>). Never open a browser or computer session to sign into that app, never ask for passwords, never send the user to an integrations page. Continue the task after the user says it is connected.
+- Never name or hint at any AI provider, model vendor or third-party engine behind images, videos, files or answers.
 
 You are also the research, build and docs surface:
 - Research: use exa.search/exa.contents and tinyfish.fetch/tinyfish.browser for live facts. Open real pages, cross-check numbers and dates, and end research answers with a Sources list of full clickable URLs you actually opened. Say plainly what you could not verify instead of inventing it.
@@ -320,7 +325,7 @@ export async function ensureDefaultAgent(userId: string, origin: string) {
     // enough: the next message re-syncs the agent. The tool list is bound when the agent
     // is created, so the MCP server config is re-sent too, to pick up newly added tools.
     const cfg = await readPromptConfig();
-    const stamp = `<!--megsy-prompt:${cfg.version}-->`;
+    const stamp = `<!--megsy-prompt:${cfg.version}.${PROMPT_REV}-->`;
     if (!String(agent.prompt || "").includes(stamp)) {
       const prompt = [BASE_PROMPT, cfg.extra, agent.metadata?.userPrompt || "", stamp]
         .filter(Boolean)

@@ -5,22 +5,14 @@ import { promptUpgrade } from "@/lib/upgradeMoment";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useDynamicModels } from "@/hooks/useModels";
 import { AlertCircle, Check, RefreshCw } from "lucide-react";
-import { BrandIcon, hasBrandIcon } from "@/components/chat/media/BrandIcon";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { isPaidUser } from "@/lib/subscriptionGating";
 import { filterImageModels, filterVideoModels } from "@/lib/mediaModelPolicy";
 import { useUserLang } from "@/lib/authI18n";
 import megsyModelIcon from "@/assets/megsy-model.jpg";
 
-function ModelIcon({ model }: { model: any }) {
-  const isMegsy = /megsy/i.test(String(model.name || ""));
-  const providerIcon = hasBrandIcon(model.name, model.provider);
-  const src = isMegsy ? megsyModelIcon : model.iconUrl;
-  if (providerIcon) {
-    return <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-foreground/[0.05]"><BrandIcon name={model.name} provider={model.provider} variant="color" size={28} /></span>;
-  }
-  if (isMegsy || src) return <img src={src} alt="" className={`h-11 w-11 shrink-0 rounded-xl ${isMegsy ? "object-cover" : "object-contain"}`} />;
-  return <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-foreground/[0.05] text-lg font-bold text-foreground/70">{(model.name || "?").trim().charAt(0).toUpperCase()}</span>;
+function ModelIcon(_: { model: any }) {
+  return <img src={megsyModelIcon} alt="" className="h-11 w-11 shrink-0 rounded-xl object-cover" />;
 }
 
 export interface MediaModelChoice {
@@ -104,20 +96,21 @@ export default function MediaModelPickerSheet({ open, onOpenChange, mode, select
           {error && !loading && <div className="flex items-center gap-3 rounded-2xl border border-amber-500/25 bg-amber-500/10 p-3 text-left"><AlertCircle className="h-4 w-4 shrink-0 text-amber-600" /><span className="min-w-0 flex-1 text-xs text-foreground/75">{error}</span><button type="button" onClick={reload} className="inline-flex shrink-0 items-center gap-1 rounded-full bg-background px-2.5 py-1.5 text-[11px] font-semibold"><RefreshCw className="h-3 w-3" /> Retry</button></div>}
           {!loading && filtered.length === 0 && <div className="py-10 text-center text-sm text-muted-foreground">No models available right now</div>}
           <div className="space-y-2">
-            {filtered.map((m) => {
+            {filtered.map((m, mi) => {
+              const neutralName = `Megsy ${mode === "video" ? "Video" : "Image"} ${mi + 1}`;
               const active = m.slug === selectedSlug;
               // Images are premium catalogue entries but guests may select them;
               // the server enforces the real 3-image / 12-hour guest quota.
               // Video is premium-only: do not expose a free video path here.
               const locked = mode === "video" && !paid;
               return <button key={m.id} type="button" onClick={() => {
-                if (locked) { promptUpgrade(m.name); onOpenChange(false); navigate("/pricing"); return; }
-                const displayName = englishModelName(m);
-                onSelect({ slug: m.slug || m.id, name: displayName, provider: m.provider, credits: m.credits, thumbnail: m.thumbnailUrl || m.iconUrl, type: mode === "video" ? "video" : "image", isPremium: !!m.isPremium });
+                if (locked) { promptUpgrade(neutralName); onOpenChange(false); navigate("/pricing"); return; }
+                const displayName = neutralName;
+                onSelect({ slug: m.slug || m.id, name: displayName, provider: "megsy", credits: m.credits, thumbnail: m.thumbnailUrl || m.iconUrl, type: mode === "video" ? "video" : "image", isPremium: !!m.isPremium });
                 toast.success(`Selected: ${displayName}`);
               }} className={`flex w-full items-center gap-3 rounded-2xl border px-3 py-3 text-left transition-colors hover:border-primary/40 hover:bg-primary/[0.035] ${active ? "border-primary/50 bg-primary/[0.07]" : "border-border/70 bg-card"}`}>
                 <ModelIcon model={m} />
-                <span translate="no" dir="ltr" className="min-w-0 flex-1 truncate text-left text-[14px] font-semibold text-foreground">{englishModelName(m)}</span>
+                <span translate="no" dir="ltr" className="min-w-0 flex-1 truncate text-left text-[14px] font-semibold text-foreground">{neutralName}</span>
                 {active && <Check className="h-4 w-4 shrink-0 text-primary" strokeWidth={2.8} />}
               </button>;
             })}
