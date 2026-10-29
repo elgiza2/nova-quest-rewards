@@ -47,6 +47,11 @@ export const AgentOrb = memo(function AgentOrb({
         <i />
       </div>
       <div className="ag-orb__body" />
+      {className.includes("ag-orb--chat") && (
+        <div className="ag-orb__particles" aria-hidden="true">
+          {Array.from({ length: 10 }, (_, i) => <i key={i} />)}
+        </div>
+      )}
       <div className="ag-orb__wave-clip" aria-hidden="true">
         <div className="ag-orb__wave-orbit"><div className="ag-orb__wave"><i /><i /><i /><i /><i /><i /><i /></div></div>
       </div>
