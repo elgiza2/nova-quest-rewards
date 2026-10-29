@@ -107,6 +107,27 @@ html.dark{--accent:#9b86ff;--accent2:#ffd76a;--info:#b7a4ff}
 .stat[class*=" c"] .small,.tile[class*=" c"] .small{opacity:.85}
 /* 2 or 4 tiles fill the row evenly instead of leaving a half-empty last row */
 .grid:has(> :nth-child(2):last-child),.grid:has(> :nth-child(4):last-child){grid-template-columns:1fr 1fr}
+/* Bars: Uiverse style (violet fill, pink glow, gloss, moving sparkle) */
+.bar{height:12px;border-radius:99px;background:color-mix(in srgb,#7a5af8 12%,transparent);overflow:hidden;position:relative}
+.bar>i{position:relative;overflow:hidden;border-radius:99px;background:radial-gradient(65% 120% at 50% 100%,rgba(255,105,180,.85) 0%,rgba(255,255,255,0) 100%),linear-gradient(90deg,#7a5af8,#9b7dff)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 4px 12px -4px #7a5af8;animation:barIn .9s cubic-bezier(.2,.8,.2,1) both;transform-origin:left}
+.bar>i::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);width:40%;animation:barShine 2.4s ease-in-out infinite}
+.bar>i.c2,.bar.c2>i{background:radial-gradient(65% 120% at 50% 100%,rgba(120,200,255,.8),transparent),linear-gradient(90deg,#2f6bff,#5b8cff)!important;box-shadow:0 4px 12px -4px #2f6bff}
+.bar>i.c3,.bar.c3>i{background:radial-gradient(65% 120% at 50% 100%,rgba(255,230,150,.9),transparent),linear-gradient(90deg,#e8a33d,#f5c26b)!important;box-shadow:0 4px 12px -4px #e8a33d}
+.bar>i.c4,.bar.c4>i{background:radial-gradient(65% 120% at 50% 100%,rgba(255,250,200,.9),transparent),linear-gradient(90deg,#f5c400,#ffd23f)!important;box-shadow:0 4px 12px -4px #ffd23f}
+@keyframes barIn{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes barShine{0%{transform:translateX(-120%)}100%{transform:translateX(320%)}}
+/* Vertical columns chart: <div class="cols"><div class="col"><i style="height:70%"></i><span>Jan</span></div>...</div> */
+.cols{display:flex;align-items:flex-end;gap:10px;height:160px;padding-top:8px}
+.col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:6px;min-width:0}
+.col>span{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.col>b{font-size:12px}
+.col>i{display:block;width:100%;max-width:44px;border-radius:14px 14px 8px 8px;position:relative;overflow:hidden;isolation:isolate;background:radial-gradient(80% 50% at 50% 100%,rgba(255,105,180,.85) 0%,rgba(255,255,255,0) 100%),linear-gradient(0deg,#7a5af8,#9b7dff);box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 10px 20px -12px #7a5af8;animation:colIn .9s cubic-bezier(.2,.8,.2,1) both;transform-origin:bottom}
+.col:nth-child(4n+2)>i{background:radial-gradient(80% 50% at 50% 100%,rgba(120,200,255,.85),transparent),linear-gradient(0deg,#2f6bff,#5b8cff)}
+.col:nth-child(4n+3)>i{background:radial-gradient(80% 50% at 50% 100%,rgba(255,230,150,.95),transparent),linear-gradient(0deg,#e8a33d,#f5c26b)}
+.col:nth-child(4n+4)>i{background:radial-gradient(80% 50% at 50% 100%,rgba(255,250,200,.95),transparent),linear-gradient(0deg,#f5c400,#ffd23f)}
+.col>i::before{content:"";position:absolute;inset:1px;border-radius:13px 13px 7px 7px;background:linear-gradient(178deg,rgba(255,255,255,.3),rgba(255,255,255,0) 60%);z-index:0}
+@keyframes colIn{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+.suggestions,.suggest,.followups,.follow-ups,.related{display:none!important}
 `;
 
 const BRIDGE = `<script>
