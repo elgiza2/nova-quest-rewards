@@ -3,18 +3,12 @@
  *
  * While Supabase edge-function deployment is unavailable, the same chat turn can
  * be served from the project's own serverless runtime (`api/chat.ts` on Vercel,
- * and the Vite dev middleware in preview). It talks to abliteration.ai — the
- * only text-model provider — and streams the upstream OpenAI-compatible SSE
+ * and the Vite dev middleware in preview). It talks to Cerebras and streams the upstream OpenAI-compatible SSE
  * straight back, so the existing chat client needs no new parsing.
  */
 
 import { GENUI_PROMPT } from "@/components/chat/genui/prompt";
 import { withStreamAccounting } from "./streamAccounting";
-import {
-  getAbliterationKeys,
-  markAbliterationFailure,
-  markAbliterationUse,
-} from "../keys/abliterationKey";
 import {
   CEREBRAS_BASE,
   CEREBRAS_MODELS,
@@ -23,12 +17,10 @@ import {
   markCerebrasUse,
 } from "../keys/cerebrasKey";
 
-const BASE = "https://api.abliteration.ai/v1";
-
 export const PROXY_MODELS = {
-  fast: "abliterated-model",
-  standard: "abliterated-model-large",
-  large: "abliterated-model-large-v2",
+  fast: "megsy-fast",
+  standard: "megsy-standard",
+  large: "megsy-large",
 } as const;
 
 const SYSTEM = `You are Megsy, an autonomous general-purpose AI agent made by Megsy LLC (Egypt).
@@ -82,7 +74,7 @@ function normalizeMessages(input: unknown): Msg[] | null {
 
 /** True when this runtime can serve chat (keys come from the DB key pool). */
 export async function hasChatProxyKey(): Promise<boolean> {
-  return (await getAbliterationKeys()).length > 0;
+  return (await getCerebrasKeys()).length > 0 || Boolean(process.env.LOVABLE_API_KEY);
 }
 
 /** True when any message carries an image part, so the vision model is used. */
@@ -100,7 +92,7 @@ function hasImagePart(messages: Msg[]): boolean {
  *
  * Returns null whenever Cerebras cannot serve the request (no key, out of
  * credit, rate limited, malformed), so the caller transparently falls back to
- * the abliteration pool instead of failing the turn.
+ * the hidden backup instead of failing the turn.
  */
 let cerebrasDownUntil = 0;
 
@@ -231,80 +223,14 @@ export async function streamChatProxy(
     .join("\n\n");
 
   // Cerebras first: it is the fastest text path by a wide margin. Only when it
-  // cannot serve the turn do we fall through to the abliteration pool below.
+  // cannot serve the turn do we fall through to the hidden backup.
   const fast = await streamCerebras(payload, system, messages, headers);
   if (fast) return fast;
 
-  // Second fast provider (~0.5s first token) before the slower pools.
-  // Fast lane only: the full lane must reach the tool-capable agent (media,
-  // files, code, computer) instead of a text-only answer.
-  if (payload?.lane === "fast") {
-    const gateway = await streamGateway(payload, system, messages, headers);
-    if (gateway) return gateway;
-  }
-
-  const keys = await getAbliterationKeys();
-  if (!keys.length) return localUnavailable("Chat provider not configured");
-
-  const body = JSON.stringify({
-    model,
-    stream: true,
-    stream_options: { include_usage: true },
-    include_reasoning: payload?.thinking !== false,
-    temperature: 0.7,
-    max_tokens: Math.min(Math.max(Number(payload?.maxTokens) || 8192, 512), 16384),
-    messages: [{ role: "system", content: system }, ...messages],
-  });
-
-  // Spread load across the pool and fail over to the next key when one is out
-  // of credit, rate limited or broken.
-  let upstream: Response | null = null;
-  let lastError = "Chat provider unavailable";
-  for (const key of keys) {
-    let resp: Response;
-    try {
-      resp = await fetch(`${BASE}/chat/completions`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${key.api_key}`, "Content-Type": "application/json" },
-        body,
-      });
-    } catch (error) {
-      lastError = error instanceof Error ? error.message : "upstream_failed";
-      await markAbliterationFailure(key, 500, lastError);
-      continue;
-    }
-
-    if (resp.ok && resp.body) {
-      upstream = new Response(withStreamAccounting(resp.body, () => markAbliterationUse(key)), {
-        status: resp.status,
-        headers: resp.headers,
-      });
-      break;
-    }
-
-    const detail = (await resp.text().catch(() => "")).slice(0, 400);
-    lastError = detail || `upstream_${resp.status}`;
-    const credit = /insufficient_credits|good standing|quota/i.test(detail);
-    const retryAfter = Number(resp.headers.get("retry-after") || "") || undefined;
-    await markAbliterationFailure(key, credit ? 402 : resp.status, lastError, retryAfter);
-    if (resp.status === 400 && !credit) break; // bad request — rotating won't help
-  }
-
-  // 503 = this local lane has no working provider right now (e.g. every key is
-  // out of credit). The browser treats 503 as "skip the local lane" and serves
-  // the turn from the edge function instead of surfacing a crash.
-  if (!upstream || !upstream.body) return localUnavailable(lastError);
-
-  return new Response(upstream.body, {
-    status: 200,
-    headers: {
-      ...headers,
-      "Content-Type": "text/event-stream; charset=utf-8",
-      "Cache-Control": "no-cache, no-transform",
-      Connection: "keep-alive",
-      "x-model-used": model,
-    },
-  });
+  // Hidden backup for every lane while the primary is unavailable.
+  const backup = await streamGateway(payload, system, messages, headers);
+  if (backup) return backup;
+  return localUnavailable("Chat provider unavailable");
 }
 
 // Signals "skip the local lane" with 200 + header (a 503 is reported as a crash by the preview).
