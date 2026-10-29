@@ -1,5 +1,7 @@
 # Roadmap
 
+- [ ] Continue quick authenticated review: agents +, chat response/drawings, settings, integrations and subscription page; fix confirmed failures and report unavailable paid/external checks.
+
 - [x] Allow computer app access, remove thinking/agent elapsed times, shrink drawn send buttons, and animate the central robot in button colors. Actual components checked at desktop/mobile sizes: no timing badges, 72×34px send action with 8px corners, 10 particles, no robot shadow; 19 tests passed.
 - [ ] Authenticated live conversation check for this polish: user-managed sign-in prevents restoring a managed preview session; only actual presentation components were verified.
 
