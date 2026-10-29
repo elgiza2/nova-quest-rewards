@@ -25,6 +25,7 @@ describe("workspace loading", () => {
     mocks.sessions.mockReturnValue(new Promise(() => {}));
     const store = await import("./store");
     const { result } = renderHook(() => store.useWorkspaceStore());
+    await act(async () => { await Promise.resolve(); });
     await act(async () => { await store.loadWorkspace(); });
     expect(result.current.ready).toBe(true);
     expect(result.current.agents[0]?.id).toBe("main");
