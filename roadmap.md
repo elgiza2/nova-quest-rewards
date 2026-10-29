@@ -1,6 +1,7 @@
 # Roadmap
 
-- [ ] Continue quick authenticated review: agents +, chat response/drawings, settings, integrations and subscription page; fix confirmed failures and report unavailable paid/external checks.
+- [x] Quick authenticated review: agents + opens chat draft, text response works, interactive question renders and its button sends the choice; settings, integrations, pricing and usage open. Removed auth-callback re-entry and history blocking from workspace loading; 100 existing tests and 2 new regression tests passed.
+- [ ] External latency remains: specialist loading took 22–29 seconds and a widget required over 25 seconds; upstream generation/loading response time is not resolved by the workspace fix. Paid media, real payments and actual computer execution were not exercised in this quick review.
 
 - [x] Allow computer app access, remove thinking/agent elapsed times, shrink drawn send buttons, and animate the central robot in button colors. Actual components checked at desktop/mobile sizes: no timing badges, 72×34px send action with 8px corners, 10 particles, no robot shadow; 19 tests passed.
 - [ ] Authenticated live conversation check for this polish: user-managed sign-in prevents restoring a managed preview session; only actual presentation components were verified.
