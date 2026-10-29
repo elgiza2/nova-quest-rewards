@@ -80,7 +80,6 @@ import {
   AgentNewPage,
   AgentChatPage,
   AgentHubPage,
-  AgentHubNewPage,
   TeamWorkspacePage,
   AgentSelectionPage,
 } from "./lazyPages";
@@ -103,7 +102,7 @@ export const AppRoutes = ({ currentUserId }: { currentUserId: string | null }) =
     <Route path="/agents" element={<ProtectedRoute><AgentSelectionPage /></ProtectedRoute>} />
     <Route path="/agents/directory" element={<Navigate to="/agents" replace />} />
     <Route path="/agents/conversations" element={<ProtectedRoute><AgentHubPage /></ProtectedRoute>} />
-    <Route path="/agents/new" element={<ProtectedRoute><AgentHubNewPage /></ProtectedRoute>} />
+    <Route path="/agents/new" element={<ProtectedRoute><AgentNewPage /></ProtectedRoute>} />
     <Route path="/agents/chat" element={<ProtectedRoute><AgentChatRedirect /></ProtectedRoute>} />
     <Route path="/agents/chat/:sessionId" element={<ProtectedRoute><AgentChatRedirect /></ProtectedRoute>} />
     <Route path="/team" element={<ProtectedRoute><TeamWorkspacePage /></ProtectedRoute>} />
