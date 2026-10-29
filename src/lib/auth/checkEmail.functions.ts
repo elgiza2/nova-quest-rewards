@@ -15,7 +15,8 @@ export const checkEmailRegistered = createServerFn({ method: "POST" })
       );
       if (!res.ok) return { exists: null as boolean | null };
       const json = (await res.json()) as { users?: { email?: string | null }[] };
-      const exists = (json.users ?? []).some((u) => (u.email ?? "").toLowerCase() === data.email);
+      if (!Array.isArray(json.users)) return { exists: null as boolean | null };
+      const exists = json.users.some((u) => typeof u.email === "string" && u.email.toLowerCase() === data.email);
       return { exists: exists as boolean | null };
     } catch {
       return { exists: null as boolean | null };
