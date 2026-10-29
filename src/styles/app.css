@@ -89,17 +89,20 @@ html.dark [data-shell="megsy"] .user-bubble.user-bubble.user-bubble{
   color:hsl(var(--muted-foreground)); text-align:start; cursor:pointer;
 }
 .mtrace-head:disabled{ cursor:default }
+/* Thinking loader (Uiverse _5797): glowing inset-shadow orb */
 .mring{
-  position:relative; flex:0 0 auto; width:14px; height:14px; border-radius:50%;
-  background:conic-gradient(from 0deg, transparent 0 22%, var(--mt-pink) 58%, var(--mt-violet) 100%);
-  -webkit-mask:radial-gradient(farthest-side, transparent calc(100% - 2.5px), #000 calc(100% - 2.5px));
-          mask:radial-gradient(farthest-side, transparent calc(100% - 2.5px), #000 calc(100% - 2.5px));
-  animation:mspin .9s linear infinite;
+  position:relative; flex:0 0 auto; width:18px; height:18px; aspect-ratio:1/1; border-radius:50%;
+  background-color:transparent; animation:loader-rotate 1.5s linear infinite;
 }
-.mring::after{
-  content:""; position:absolute; inset:-5px; border-radius:50%;
-  background:radial-gradient(60% 60% at 50% 50%, rgba(122,90,248,.32), transparent 72%);
+@keyframes loader-rotate{
+  0%{ transform:rotate(90deg); box-shadow:0 1px 1px 0 #fff inset,0 3px 5px 0 #ff2b2b inset,0 4px 4px 0 #ff0606 inset }
+  50%{ transform:rotate(270deg); background:#ffe8e9; box-shadow:0 1px 1px 0 #ffc8c8 inset,0 3px 5px 0 #ff1b1b inset,0 4px 4px 0 #fbef19 inset }
+  100%{ transform:rotate(450deg); box-shadow:0 1px 1px 0 #fff inset,0 3px 5px 0 #ff8f8f inset,0 4px 4px 0 #ff1b1b inset }
 }
+.loader-letters{ display:inline-flex; flex-wrap:wrap; gap:1px; color:hsl(var(--foreground)); background:none!important; -webkit-text-fill-color:currentColor }
+.loader-letter{ display:inline-block; opacity:.4; animation:loader-letter-anim 2s infinite; border-radius:50ch }
+@keyframes loader-letter-anim{ 0%,100%{opacity:.4;transform:translateY(0)} 20%{opacity:1;transform:scale(1.15)} 40%{opacity:.7;transform:translateY(0)} }
+@media (prefers-reduced-motion:reduce){ .loader-letter{animation:none;opacity:1} }
 @keyframes mspin{ to{ transform:rotate(1turn) } }
 .mdot{
   flex:0 0 auto; width:7px; height:7px; border-radius:50%;
