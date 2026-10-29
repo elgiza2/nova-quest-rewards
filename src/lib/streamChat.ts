@@ -6,6 +6,7 @@ import { readChatModelPreferences } from "@/lib/chatModelPreferences";
 import { edgeAnonKey, edgeUrl } from "@/lib/edgeRuntime";
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from "@/lib/edgeRuntime";
 import { isTrivialTurn, shouldForceFastTurn } from "@/lib/chat/trivialTurn";
+import { GENUI_PROMPT } from "@/components/chat/genui/prompt";
 
 /**
  * Provider keys live server-side in the deployed Supabase functions, so both
