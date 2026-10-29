@@ -244,7 +244,7 @@ export async function streamChatProxy(
   }
 
   const keys = await getAbliterationKeys();
-  if (!keys.length) return json({ error: "Chat provider not configured" }, 503);
+  if (!keys.length) return localUnavailable("Chat provider not configured");
 
   const body = JSON.stringify({
     model,
@@ -293,7 +293,7 @@ export async function streamChatProxy(
   // 503 = this local lane has no working provider right now (e.g. every key is
   // out of credit). The browser treats 503 as "skip the local lane" and serves
   // the turn from the edge function instead of surfacing a crash.
-  if (!upstream || !upstream.body) return json({ error: lastError }, 503);
+  if (!upstream || !upstream.body) return localUnavailable(lastError);
 
   return new Response(upstream.body, {
     status: 200,
@@ -304,5 +304,13 @@ export async function streamChatProxy(
       Connection: "keep-alive",
       "x-model-used": model,
     },
+  });
+}
+
+// Signals "skip the local lane" with 200 + header (a 503 is reported as a crash by the preview).
+function localUnavailable(error: string) {
+  return new Response(JSON.stringify({ error }), {
+    status: 200,
+    headers: { "Content-Type": "application/json", "X-Local-Unavailable": "1" },
   });
 }
