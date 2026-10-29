@@ -1,5 +1,6 @@
 # Roadmap
 
+- [ ] Fix streaming delays: remove artificial text reveal, release direct fast answers immediately, and keep provider accounting off first-byte delivery.
 - [x] Remove initial buffering for forced trivial fast turns; keep ordinary route-marker protection.
 - [x] Restore readable thinking shimmer and expand live progress steps with elapsed time.
 - [x] Strengthen interactive drawing/card/button instructions; verify renderer action callback.
