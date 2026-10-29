@@ -77,7 +77,9 @@ import { runOnIdle } from "@/lib/lazyOnIdle";
 // happen before Sentry boots are still caught by the window handlers below.
 runOnIdle(() => {
   void initSentry();
-  void import("@/lib/webVitals").then((m) => m.initWebVitals());
+  void import("@/lib/webVitals")
+    .then((m) => m.initWebVitals())
+    .catch(() => undefined); // stale chunk after a redeploy: metrics are optional
 });
 
 // Kick off language init early so <html lang/dir> and stored preference are
@@ -265,3 +267,14 @@ installTapReliability();
     rootEl?.removeAttribute("aria-busy");
   } catch {}
 })();
+
+// After a redeploy, old chunk names 404. Reload once to pick up the new build.
+if (typeof window !== "undefined") {
+  window.addEventListener("vite:preloadError", (event) => {
+    const key = "megsy_chunk_reload";
+    if (sessionStorage.getItem(key)) return;
+    sessionStorage.setItem(key, "1");
+    event.preventDefault();
+    window.location.reload();
+  });
+}
