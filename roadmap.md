@@ -1,5 +1,10 @@
 # Roadmap
 
+- [x] Remove initial buffering for forced trivial fast turns; keep ordinary route-marker protection.
+- [x] Restore readable thinking shimmer and expand live progress steps with elapsed time.
+- [x] Strengthen interactive drawing/card/button instructions; verify renderer action callback.
+- [ ] Verify live generated answers and model latency in authenticated chat: external backend session unavailable.
+
 - [x] Redesign Tasks with Orange point icon and five character images; restrict active tasks to the five requested types.
 - [x] Remove main Agents +; remove Earn tasks and rename Earn to Referral with Telegram-only invite links.
 - [x] Inline manual TON/USDT-TON checkout; strict reference matching and atomic settlement with transaction reuse prevention.
